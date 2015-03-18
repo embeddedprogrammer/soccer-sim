@@ -23,10 +23,7 @@
 #define MOVEMENT_TIME 1000 //ms
 
 enum operatingStates
-	{idle, stopWaitForCamera, move} operatingState;
-
-enum cameraStates
-	{waitForStartOfCameraUpdate, waitForEndOfRobotMotion} cameraState;
+	{idle, move} operatingState;
 
 enum strategy_states
 	{testGoToPoint, testPlayRushGoal, testPlayDefense} strategy_state;
@@ -36,98 +33,51 @@ bool stopRobot = true;
 
 coord3 robot1, robot2;
 coord2 ball;
+double currentTime;
 
 coord3 lastCameraUpdateCoords;
 float moveTime = 0;
-
-void enterCameraUpdateWaitState()
-{
-	printf("operatingState = move\n");
-	printf("cameraState = waitForStartOfCameraUpdate\n");
-	operatingState = move;
-	cameraState = waitForStartOfCameraUpdate;
-	lastCameraUpdateCoords = robot1;
-	startTimer(MOVE_TIMER);
-	moveTime = 0;
-}
 
 void enterStrategyState(strategy_states newState)
 {
 	printf("strategy_state = newState (%d)\n", newState);
 	strategy_state = newState;
-	enterCameraUpdateWaitState();
+	operatingState = move;
 }
 
-void receiveCoords(coord3 pRobot1, coord3 pRobot2, coord2 pBall)
+void receiveCoords(coord3 pRobot1, coord3 pRobot2, coord2 pBall, double t)
 {
 	manualTimerTicks++;
 
 	robot1 = pRobot1;
 	robot2 = pRobot2;
 	ball = pBall;
+	currentTime = t;
+}
 
+void strategy_tick()
+{
 	// Current state actions
 	switch (operatingState)
 	{
 	case idle:
 		//do nothing
-	break;
-	case stopWaitForCamera:
-		//do nothing
-	break;
+		break;
 	case move:
 		float d = 0;
 		switch (strategy_state)
 		{
 		case testGoToPoint:
-			d = skill_goToPoint(robot1, pBall);
+			d = skill_goToPoint(robot1, ball);
 			break;
 		case testPlayRushGoal:
-			d = play_rushGoal(robot1, pBall);
+			d = play_rushGoal(robot1, ball);
 			break;
 		case testPlayDefense:
-			d = play_followBallOnLine(robot1, pBall, 410);
+			d = play_followBallOnLine(robot1, ball, 410);
 			break;
 		}
-		if(moveTime == 0)
-		{
-			moveTime = d * 1000 / 300;
-			printf("Moving for %.f seconds\n", moveTime);
-		}
-		//printf("wait end of motion - Time: %ld\n", getTimerTime_ms(MOVE_TIMER));
-		if(getTimerTime_ms(MOVE_TIMER) > moveTime)
-		{
-
-			operatingState = stopWaitForCamera;
-			killMotors();
-			printf("operatingState = stopWaitForCamera\n");
-		}
 		break;
-	}
-
-	if(operatingState != idle)
-	{
-		switch (cameraState)
-		{
-		case waitForStartOfCameraUpdate:
-			//printf("waitForStartOfCameraUpdate - Distance: %f\n", utility_dist3(robot1, lastCameraUpdateCoords));
-			if(utility_dist3(robot1, lastCameraUpdateCoords) > CAMERA_WAIT_DIST || getTimerTime_ms(MOVE_TIMER) > 2000)
-			{
-				printf("cameraState = waitForEndOfRobotMotion\n");
-				cameraState = waitForEndOfRobotMotion;
-				startTimer(END_UPDATE_CAMERA_WAIT_TIMER);
-			}
-		break;
-		case waitForEndOfRobotMotion:
-			//printf("waitForEndOfRobotMotion - Time: %ld\n", getTimerTime_ms(END_UPDATE_CAMERA_WAIT_TIMER));
-			if(getTimerTime_ms(END_UPDATE_CAMERA_WAIT_TIMER) > moveTime + 200)
-			{
-				enterCameraUpdateWaitState();
-			}
-
-			//do nothing
-		break;
-		}
 	}
 //	printf("coords: [%f %f %f], [%f %f]\n", robot1.x, robot1.y, robot1.w, ball.x,
 //			ball.y);
@@ -176,18 +126,18 @@ void pressKey(int key)
 		enterStrategyState(testPlayDefense);
 		break;
 	case KEY_a + ('s' - 'a'):
-		startTimer(0);
-		printf("Start timer. clock: %ld\n", getTime_ms());
+		startTimer(7);
+		printf("Start timer. clock: %f\n", getTime_ms());
 		break;
 	case KEY_a + ('w' - 'a'):
-		printf("Time: %ld. clock: %ld\n", getTimerTime_ms(0), getTime_ms());
+		printf("Time: %f. clock: %f\n", getTimerTime_ms(7), getTime_ms());
 		break;
 	case KEY_a + ('z' - 'a'):
-		printf("Time: %ld. clock: %ld\n", getTimerTime_ms(0), getTime_ms());
+		printf("Time: %f. clock: %f\n", getTimerTime_ms(7), getTime_ms());
 		sleep_ms(1000);
-		printf("Time: %ld. clock: %ld\n", getTimerTime_ms(0), getTime_ms());
+		printf("Time: %f. clock: %f\n", getTimerTime_ms(7), getTime_ms());
 		sleep_ms(1000);
-		printf("Time: %ld. clock: %ld\n", getTimerTime_ms(0), getTime_ms());
+		printf("Time: %f. clock: %f\n", getTimerTime_ms(7), getTime_ms());
 		break;
 	case KEY_a + ('j' - 'a'):
 		printMotorSpeeds();
@@ -237,8 +187,7 @@ void pressKey(int key)
 			moveRobotWorldCoordinates(robot1, (coord3 ) { 0, 0, -.5 });
 			break;
 		}
-//		sleep_ms(250);
-//		killMotors();
+		overrideForSpecifiedTime(250);
 	}
 //	printf("key press: %d\n", key);
 }
