@@ -11,7 +11,7 @@
  */
 void chatterCallback(const beginner_tutorials::Num::ConstPtr& msg)
 {
-	receiveCoords((coord3){msg->x0, msg->y0, msg->w0}, (coord3){msg->x1, msg->y1, msg->w1}, (coord2){msg->xb, msg->yb});
+	receiveCoords((coord3){msg->x0, msg->y0, msg->w0}, (coord3){msg->x1, msg->y1, msg->w1}, (coord2){msg->xb, msg->yb}, msg->t);
 }
 
 void commandCallback(const std_msgs::Int32::ConstPtr& msg)
@@ -22,17 +22,18 @@ void commandCallback(const std_msgs::Int32::ConstPtr& msg)
 int main(int argc, char **argv)
 {
 	motorControl_init();
-
 	ros::init(argc, argv, "listener");
-
 	ros::NodeHandle n;
-
 	ros::Subscriber sub = n.subscribe("chatter", 10, chatterCallback);
-
 	ros::Subscriber sub2 = n.subscribe("command", 10, commandCallback);
-
-	ros::spin();
-
+	ros::Rate loop_rate(50);
+	while(ros::ok())
+	{
+		ros::spinOnce();
+		strategy_tick();
+		motorControl_tick();
+		loop_rate.sleep();
+	}
 	printf("Exiting\n");
 
 	killMotors();
