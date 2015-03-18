@@ -14,42 +14,6 @@ typedef struct {
 	long p, i, d, q;
 } pidq;
 
-void wheelTest();
-void spinWheel(int wheelId, int velocity);
-void serial_sendMessage(char command[], int size);
-void straight();
-void turnRight();
-void turnLeft();
-void moveRight();
-void moveLeft();
-void killMotors();
-void SpinInPlaceC();
-void SpinInPlaceCC();
-void Box();
-
-void printCharArray(char command[], int size)
-{
-	for(int i = 0; i < size; i++)
-	{
-		cout << " " << ((int)((unsigned char)command[i]));
-	}
-	cout << endl;
-}
-
-void wheelTest()
-{
-	int i;
-	for(i = 0; i < 3; i++)
-	{
-		spinWheel(i, 127);
-		sleep(1);
-		spinWheel(i, -127);
-		sleep(1);
-		spinWheel(i, 0);
-		sleep(1);
-	}
-}
-
 #ifndef M_PI
 #define M_PI 3.1415926535
 #endif
@@ -59,53 +23,21 @@ void wheelTest()
 #define P_ROBOT_RADIUS 8.4 //Measured
 #define P_KICKER_DIST 6.35 //Measured
 const float WHEEL_ANGLES[] = {120, 240, 0};
-float M[3][3]; // = {{1, 2, 3}, {0, 0, 0}, {0, 0, 0}};
+float M[3][3];
 float wheelPowerNeededPerVelocityUnit = 20;
-
-void calcBodyFrameVectors();
-void calculateWheelVelocities(float v[]);
-void spinWheelAtVelocity(int wheelId, float velocity);
-int sign(int x);
 int serial_fd;
 
-void motorControl_init()
-{
-	calcBodyFrameVectors();
-	serial_fd = open("/dev/ttySAC0", O_RDWR);
-}
+#define MOTOR_CONTROL_OVERRIDE_TIMER 7
+bool override = false;
+double timeToOverride;
 
-void calcBodyFrameVectors()
+void printCharArray(char command[], int size)
 {
-	M[0][0] = cos(M_PI/180*WHEEL_ANGLES[0]) / P_WHEEL_RADIUS;
-	M[0][1] = sin(M_PI/180*WHEEL_ANGLES[0]) / P_WHEEL_RADIUS;
-	M[0][2] = P_ROBOT_RADIUS								/ P_WHEEL_RADIUS;
-	M[1][0] = cos(M_PI/180*WHEEL_ANGLES[1]) / P_WHEEL_RADIUS;
-	M[1][1] = sin(M_PI/180*WHEEL_ANGLES[1]) / P_WHEEL_RADIUS;
-	M[1][2] = P_ROBOT_RADIUS								/ P_WHEEL_RADIUS;
-	M[2][0] = cos(M_PI/180*WHEEL_ANGLES[2]) / P_WHEEL_RADIUS;
-	M[2][1] = sin(M_PI/180*WHEEL_ANGLES[2]) / P_WHEEL_RADIUS;
-	M[2][2] = P_ROBOT_RADIUS								/ P_WHEEL_RADIUS;
-}
-
-void moveRobotBodyCoordinates(coord3 v) //int[]* worldVelocities, int[]* wheelVelocities)
-{
-	spinWheelAtVelocity(0, M[0][0]*v.x - M[0][1]*v.y + M[0][2]*v.w);
-	spinWheelAtVelocity(1, M[1][0]*v.x - M[1][1]*v.y + M[1][2]*v.w);
-	spinWheelAtVelocity(2, M[2][0]*v.x - M[2][1]*v.y + M[2][2]*v.w);
-}
-
-void moveRobotWorldCoordinates(coord3 robot, coord3 v)
-{
-	//printCoord3(v);
-	rotate(&v, -robot.w + M_PI/2);
-	moveRobotBodyCoordinates(v);
-}
-
-// Spin wheel in cm/sec.
-void spinWheelAtVelocity(int wheelId, float velocity)
-{
-	int power = (int)(velocity * wheelPowerNeededPerVelocityUnit);
-	spinWheel(wheelId, power);
+	for(int i = 0; i < size; i++)
+	{
+		cout << " " << ((int)((unsigned char)command[i]));
+	}
+	cout << endl;
 }
 
 const int wheelAddress[] = {128, 129, 128};
@@ -129,52 +61,13 @@ int calcChecksum2(char command[], int commandSize, char result[], int resultSize
 	return checksum;
 }
 
-//Accepts power values from -127 to +127.
-void spinWheel(int wheelId, int power)
-{
-	if(abs(power) > 127)
-		power = 127 * sign(power);
-	char command[] = {0, 0, 0, 0};
-	command[0] = wheelAddress[wheelId];
-	int motor = wheelRoboclawPosition[wheelId];
-	if(power >= 0)
-	{
-		command[1] = 0 + motor*4;
-		command[2] = power;
-	}
-	else
-	{
-		command[1] = 1 + motor*4;
-		command[2] = -power;
-	}
-	command[3] = calcChecksum(command, 3);
-	//printCharArray(command);
-	serial_sendMessage(command, sizeof(command));
-}
-
-//Valid baud rates for ROBOClAW are 2400, 9600, 19200, and 38400
-//void serial_setBaudRate(int baudRate)
-//{
-//	system("stty -F /dev/ttySAC0 9600"); // + baudRate);
-//	printf("stty -F /dev/ttySAC0 %d\n", baudRate);
-//}
-
 void serial_sendMessage(char command[], int size)
 {
-	//startTimer();
 	write(serial_fd, command, size);
-	//cout << "command sent: ";
-	//printCharArray(command, size);
-	//printf("Time to send command %ld us\n", getTimerTime_us()); //Aprox 300 us
 }
 
 int serial_readMessage(char result[], int size)
 {
-	//For some reason we have to reopen connection to receive data
-//	close(serial_fd);
-//	serial_fd = open("/dev/ttySAC0", O_RDWR);
-
-	//startTimer();
 	int len;
 	for(int i = 0; i < 100; i++)
 	{
@@ -185,10 +78,6 @@ int serial_readMessage(char result[], int size)
 	}
 	if(len != size)
 		printf("Error reading from serial port. Only received %d out of %d characters\n", len, size);
-
-	//result[len] = '\0';
-	//printf("Time to send command %ld us\n", getTimerTime_us()); //Aprox 300 us
-
 	return len;
 }
 
@@ -276,6 +165,46 @@ void setMotorPidConstants(int wheelId, pidq val)
 	serial_sendMessage(command, 19);
 }
 
+//Drive Commands
+
+//Accepts power values from -127 to +127.
+void spinWheel(int wheelId, int power)
+{
+	if(abs(power) > 127)
+		power = 127 * sign(power);
+	char command[] = {0, 0, 0, 0};
+	command[0] = wheelAddress[wheelId];
+	int motor = wheelRoboclawPosition[wheelId];
+	if(power >= 0)
+	{
+		command[1] = 0 + motor*4;
+		command[2] = power;
+	}
+	else
+	{
+		command[1] = 1 + motor*4;
+		command[2] = -power;
+	}
+	command[3] = calcChecksum(command, 3);
+	//printCharArray(command);
+	serial_sendMessage(command, sizeof(command));
+}
+
+// Spin wheel in cm/sec.
+void spinWheelAtVelocity(int wheelId, float velocity)
+{
+	int power = (int)(velocity * wheelPowerNeededPerVelocityUnit);
+	spinWheel(wheelId, power);
+}
+
+void killMotors()
+{
+	spinWheel(0,0);
+	spinWheel(1,0);
+	spinWheel(2,0);
+}
+
+
 void driveMotorWithSignedSpeed(int wheelId, long qSpeed)
 {
 	char command[7];
@@ -303,7 +232,7 @@ void printPidConstants()
 
 void showSpeedVsVelocityGraph(int wheelId)
 {
-	printf("Show power vs. velocity graph for wheel %d\n", wheelId);
+	printf("Show power vs. velocity graph for wheel %d\n", wheelId + 1);
 	printf("Desired\tActual\n");
 	for(int i = 0; i < 127; i++)
 	{
@@ -318,78 +247,92 @@ void showSpeedVsVelocityGraph(int wheelId)
 	spinWheel(wheelId, 0);
 }
 
+#define P_PULSES_PER_RADIAN (19456 / 2 / M_PI)
 
+//Two things to calibrate
 
-
-//Other stuff
-
-void straight()
+void startCalibrate(coord2 velocity)
 {
-	spinWheel(0,127);
-	spinWheel(1,127);
+//	for(int i = 0; i < 127; i++)
+//	{
+//		driveMotorWithSignedSpeed(wheelId, speed);
+//		int speed = i;
+//		spinWheel(wheelId, speed);
+//		sleep_ms(100);
+//		long actual = readMotorSpeed(wheelId);
+//		printf("%d\t%ld\n", speed, actual);
+//	}
+//	spinWheel(wheelId, 0);
 }
 
-void turnRight(){
-	spinWheel(0,-15);
-	spinWheel(1,30);
-	spinWheel(2,30);
-	sleep(1);
-	killMotors();
-}
+// Body Frame Calculations
 
-void turnLeft(){
-	spinWheel(0,43);
-	//spinWheel(1,-30);
-	//spinWheel(2,-30);
-	sleep(1);
-	killMotors();
-}
-
-void moveRight(){
-	spinWheel(2,-127);
-	spinWheel(1,25);
-	spinWheel(0,-25);
-
-}
-
-void moveLeft(){
-	spinWheel(2,127);
-	spinWheel(1,-25);
-	spinWheel(0,25);
-}
-
-void killMotors()
+void calcBodyFrameVectors()
 {
-	spinWheel(0,0);
-	spinWheel(1,0);
-	spinWheel(2,0);
+	M[0][0] = cos(M_PI/180*WHEEL_ANGLES[0]) / P_WHEEL_RADIUS;
+	M[0][1] = sin(M_PI/180*WHEEL_ANGLES[0]) / P_WHEEL_RADIUS;
+	M[0][2] = P_ROBOT_RADIUS								/ P_WHEEL_RADIUS;
+	M[1][0] = cos(M_PI/180*WHEEL_ANGLES[1]) / P_WHEEL_RADIUS;
+	M[1][1] = sin(M_PI/180*WHEEL_ANGLES[1]) / P_WHEEL_RADIUS;
+	M[1][2] = P_ROBOT_RADIUS								/ P_WHEEL_RADIUS;
+	M[2][0] = cos(M_PI/180*WHEEL_ANGLES[2]) / P_WHEEL_RADIUS;
+	M[2][1] = sin(M_PI/180*WHEEL_ANGLES[2]) / P_WHEEL_RADIUS;
+	M[2][2] = P_ROBOT_RADIUS								/ P_WHEEL_RADIUS;
 }
 
-void SpinInPlaceC()
+void motorControl_init()
 {
-	spinWheel(0,-20);
-	spinWheel(1,20);
-	spinWheel(2,20);
-	sleep(3);
-	killMotors();
+	calcBodyFrameVectors();
+	serial_fd = open("/dev/ttySAC0", O_RDWR);
 }
 
-void SpinInPlaceCC()
+void moveRobotBodyCoordinates(coord3 v) //int[]* worldVelocities, int[]* wheelVelocities)
 {
-	spinWheel(0,-80);
-	spinWheel(1,80);
-	spinWheel(2,80);
-	sleep(3);
-	killMotors();
+	float motor1Speed = M[0][0]*v.x - M[0][1]*v.y + M[0][2]*v.w;
+	float motor2Speed = M[1][0]*v.x - M[1][1]*v.y + M[1][2]*v.w;
+	float motor3Speed = M[2][0]*v.x - M[2][1]*v.y + M[2][2]*v.w;
+	spinWheelAtVelocity(0, motor1Speed);
+	spinWheelAtVelocity(1, motor2Speed);
+	spinWheelAtVelocity(2, motor3Speed);
+//	driveMotorWithSignedSpeed(0, motor1Speed * P_PULSES_PER_RADIAN);
+//	driveMotorWithSignedSpeed(1, motor2Speed * P_PULSES_PER_RADIAN);
+//	driveMotorWithSignedSpeed(2, motor3Speed * P_PULSES_PER_RADIAN);
 }
 
-void Box(){
-	int i =0;
-	for(i; i<4; i++)
+void moveRobotWorldCoordinates(coord3 robot, coord3 v)
+{
+	if(!override)
 	{
-		straight();
-		sleep(1);
+		rotate(&v, -robot.w + M_PI/2);
+		moveRobotBodyCoordinates(v);
+	}
+	else
+	{
+		printf("override on\n");
+	}
+}
+
+//Tick and control
+
+void setOverride(bool val)
+{
+	override = val;
+}
+
+void overrideForSpecifiedTime(double t)
+{
+	printf("Start timer\n");
+	startTimer(MOTOR_CONTROL_OVERRIDE_TIMER);
+	timeToOverride = t;
+	setOverride(true);
+}
+
+void motorControl_tick()
+{
+	if(override && getTimerTime_ms(MOTOR_CONTROL_OVERRIDE_TIMER) > timeToOverride)
+	{
+		override = false;
 		killMotors();
-		turnLeft();
+		printf("stop override at %f ms\n", getTimerTime_ms(MOTOR_CONTROL_OVERRIDE_TIMER));
 	}
 }
