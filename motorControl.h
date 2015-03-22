@@ -6,8 +6,8 @@
 #include <math.h>
 #include <unistd.h>
 #include <iostream>
-
 #include "utility.h"
+
 using namespace std;
 
 typedef struct {
@@ -17,6 +17,8 @@ typedef struct {
 #ifndef M_PI
 #define M_PI 3.1415926535
 #endif
+
+double cameraLatency_ms = 580;
 
 // Everything is in centimeters.
 #define P_WHEEL_RADIUS 2.7 //Measured
@@ -28,8 +30,12 @@ float wheelPowerNeededPerVelocityUnit = 20;
 int serial_fd;
 
 #define MOTOR_CONTROL_OVERRIDE_TIMER 7
+#define TICKS_PER_SECOND 50
 bool override = false;
 double timeToOverride;
+coord3 currentBodyVelocity;
+coord3 robot1currentPosition;
+coord3 robot1cameraPosition, robot2cameraPosition;
 
 void printCharArray(char command[], int size)
 {
@@ -64,6 +70,8 @@ int calcChecksum2(char command[], int commandSize, char result[], int resultSize
 void serial_sendMessage(char command[], int size)
 {
 	write(serial_fd, command, size);
+//	printf("command: ");
+//	printCharArray(command, size);
 }
 
 int serial_readMessage(char result[], int size)
@@ -119,6 +127,42 @@ void emptyBuffer()
 		printf("Buffer already empty.\n");
 	else
 		printf("\n");
+}
+
+long readQuadratureEncoderRegister(int wheelId)
+{
+	char command[2] = {wheelAddress[wheelId], 16 + wheelRoboclawPosition[wheelId]};
+	serial_sendMessage(command, 2);
+
+	char result[8];
+	serial_readMessage(result, 6);
+
+	if(calcChecksum2(command, 2, result, 5) != result[5])
+		printf("Error: Checksum does not match\n");
+
+	return arrayToLong(result, 0);
+}
+
+void printQuadratureEncoderRegisters()
+{
+	printf("Encoder counters: %ld, %ld, %ld\n", readQuadratureEncoderRegister(0), readQuadratureEncoderRegister(1), readQuadratureEncoderRegister(2));
+}
+
+
+//(Roboclaw should be 0 or 1)
+void resetQuadratureEncoderCounters(int roboclaw)
+{
+	char command[3];
+	command[0] = 128 + roboclaw;
+	command[1] = 20;
+	command[2] = calcChecksum(command, 2);
+	serial_sendMessage(command, 3);
+}
+
+void resetAllQuadratureEncoderCounters()
+{
+	resetQuadratureEncoderCounters(0);
+	resetQuadratureEncoderCounters(1);
 }
 
 long readMotorSpeed(int wheelId)
@@ -190,6 +234,13 @@ void spinWheel(int wheelId, int power)
 	serial_sendMessage(command, sizeof(command));
 }
 
+void spinWheels(int power0, int power1, int power2)
+{
+	spinWheel(0, -power0);
+	spinWheel(1, power1);
+	spinWheel(2, power2);
+}
+
 // Spin wheel in cm/sec.
 void spinWheelAtVelocity(int wheelId, float velocity)
 {
@@ -199,11 +250,11 @@ void spinWheelAtVelocity(int wheelId, float velocity)
 
 void killMotors()
 {
-	spinWheel(0,0);
-	spinWheel(1,0);
-	spinWheel(2,0);
+	spinWheel(0, 0);
+	spinWheel(1, 0);
+	spinWheel(2, 0);
+	currentBodyVelocity = (coord3){0, 0, 0};
 }
-
 
 void driveMotorWithSignedSpeed(int wheelId, long qSpeed)
 {
@@ -214,7 +265,6 @@ void driveMotorWithSignedSpeed(int wheelId, long qSpeed)
 	command[6] = calcChecksum(command, 6);
 	serial_sendMessage(command, 7);
 }
-
 
 void printMotorSpeeds()
 {
@@ -288,22 +338,36 @@ void motorControl_init()
 
 void moveRobotBodyCoordinates(coord3 v) //int[]* worldVelocities, int[]* wheelVelocities)
 {
+	currentBodyVelocity = v;
 	float motor1Speed = M[0][0]*v.x - M[0][1]*v.y + M[0][2]*v.w;
 	float motor2Speed = M[1][0]*v.x - M[1][1]*v.y + M[1][2]*v.w;
 	float motor3Speed = M[2][0]*v.x - M[2][1]*v.y + M[2][2]*v.w;
 	spinWheelAtVelocity(0, motor1Speed);
 	spinWheelAtVelocity(1, motor2Speed);
 	spinWheelAtVelocity(2, motor3Speed);
+
 //	driveMotorWithSignedSpeed(0, motor1Speed * P_PULSES_PER_RADIAN);
 //	driveMotorWithSignedSpeed(1, motor2Speed * P_PULSES_PER_RADIAN);
 //	driveMotorWithSignedSpeed(2, motor3Speed * P_PULSES_PER_RADIAN);
+}
+
+coord3 translateWorldCoordinatesToBodyCoordinates(coord3 robot, coord3 v)
+{
+	rotate(&v, -robot.w + M_PI/2);
+	return v;
+}
+
+coord3 translateBodyCoordinatesToWorldCoordinates(coord3 robot, coord3 v)
+{
+	rotate(&v, robot.w - M_PI/2);
+	return v;
 }
 
 void moveRobotWorldCoordinates(coord3 robot, coord3 v)
 {
 	if(!override)
 	{
-		rotate(&v, -robot.w + M_PI/2);
+		v = translateWorldCoordinatesToBodyCoordinates(robot, v);
 		moveRobotBodyCoordinates(v);
 	}
 	else
@@ -311,6 +375,8 @@ void moveRobotWorldCoordinates(coord3 robot, coord3 v)
 		printf("override on\n");
 	}
 }
+
+
 
 //Tick and control
 
@@ -327,6 +393,31 @@ void overrideForSpecifiedTime(double t)
 	setOverride(true);
 }
 
+std::deque<coord3> pastVelocities;
+
+void updateCurrentPosition(bool print)
+{
+//	startTimer(9);
+	robot1currentPosition = robot1cameraPosition;
+	int ticksBehind = (int)(cameraLatency_ms / 1000 * TICKS_PER_SECOND + .5);
+	for(int i = 200 - ticksBehind; i < 200 && i < pastVelocities.size(); i++)
+	{
+		coord3 bodyVelocity = pastVelocities.at(i);
+		if(print && i == 0)
+		{
+			printf("Current position: %f %f %f\n", robot1currentPosition.x, robot1currentPosition.y, robot1currentPosition.w);
+			printf("Body velocity: %f %f %f\n", bodyVelocity.x, bodyVelocity.y, bodyVelocity.w);
+		}
+		coord3 worldVelocity = translateBodyCoordinatesToWorldCoordinates(robot1currentPosition, bodyVelocity);
+		if(print && i == 0)
+			printf("worldVelocity: %f %f %f\n", worldVelocity.x, worldVelocity.y, worldVelocity.w);
+		robot1currentPosition.x = robot1currentPosition.x + worldVelocity.x;
+		robot1currentPosition.y = robot1currentPosition.y + worldVelocity.y;
+		robot1currentPosition.w = robot1currentPosition.w + worldVelocity.w;
+	}
+	//printf("Time to excecute: %f\n", getTimerTime_ms(9)); //100 us
+}
+
 void motorControl_tick()
 {
 	if(override && getTimerTime_ms(MOTOR_CONTROL_OVERRIDE_TIMER) > timeToOverride)
@@ -335,4 +426,10 @@ void motorControl_tick()
 		killMotors();
 		printf("stop override at %f ms\n", getTimerTime_ms(MOTOR_CONTROL_OVERRIDE_TIMER));
 	}
+
+	pastVelocities.push_back((coord3)currentBodyVelocity);
+	if(pastVelocities.size() > 100)
+		pastVelocities.pop_front();
+
+	updateCurrentPosition(false);
 }
