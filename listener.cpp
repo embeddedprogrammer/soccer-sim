@@ -1,10 +1,12 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "std_msgs/Int32.h"
+#include <deque>
 #include "strategy.h"
 #include "beginner_tutorials/Num.h"
 #include "time.h"
 #include "stdio.h"
+
 
 /**
  * This tutorial demonstrates simple receipt of messages over the ROS system.
@@ -26,9 +28,22 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::Subscriber sub = n.subscribe("chatter", 10, chatterCallback);
 	ros::Subscriber sub2 = n.subscribe("command", 10, commandCallback);
-	ros::Rate loop_rate(50);
+//	ros::Publisher pub = n.advertise<beginner_tutorials::Num>("feedback", 5);
+	ros::Rate loop_rate(TICKS_PER_SECOND);
+	int counter = 0;
 	while(ros::ok())
 	{
+//		counter++;
+//		if(counter % 2 == 0)
+//		{
+//			printf("publishing msg \n");
+//			beginner_tutorials::Num msg;
+//			msg.x0 = robot1currentPosition.x;
+//			msg.y0 = robot1currentPosition.y;
+//			msg.w0 = robot1currentPosition.w;
+//			pub.publish(msg);
+//		}
+
 		ros::spinOnce();
 		strategy_tick();
 		motorControl_tick();
