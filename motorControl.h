@@ -19,6 +19,8 @@ typedef struct {
 #endif
 
 double cameraLatency_ms = 580;
+//float pulsesPerRadian = (19456 / 2 / M_PI);
+float pulsesPerRadian = (198100 / 10 / 2 / M_PI); //Accurate to .5%
 
 // Everything is in centimeters.
 #define P_WHEEL_RADIUS 2.7 //Measured
@@ -26,16 +28,28 @@ double cameraLatency_ms = 580;
 #define P_KICKER_DIST 6.35 //Measured
 const float WHEEL_ANGLES[] = {120, 240, 0};
 float M[3][3];
+float M_inverse[3][3];
 float wheelPowerNeededPerVelocityUnit = 20;
 int serial_fd;
 
 #define MOTOR_CONTROL_OVERRIDE_TIMER 7
-#define TICKS_PER_SECOND 50
+#define TICKS_PER_SECOND 25
 bool override = false;
 double timeToOverride;
 coord3 currentBodyVelocity;
 coord3 robot1currentPosition;
 coord3 robot1cameraPosition, robot2cameraPosition;
+bool DEBUG_PRINT;
+
+void printMatrix(const char* str, float M[3][3])
+{
+	printf("%s:\n%f %f %f\n%f %f %f\n%f %f %f\n", str, M[0][0], M[0][1], M[0][2], M[1][0], M[1][1], M[1][2], M[2][0], M[2][1], M[2][2]);
+}
+
+void printCoord3(const char* str, coord3 v)
+{
+	printf("%s: %.2f %.2f %.2f\n", str, v.x, v.y, v.w);
+}
 
 void printCharArray(char command[], int size)
 {
@@ -143,9 +157,17 @@ long readQuadratureEncoderRegister(int wheelId)
 	return arrayToLong(result, 0);
 }
 
+coord3 readQuadratureEncoders()
+{
+	return (coord3){
+		readQuadratureEncoderRegister(0),
+		readQuadratureEncoderRegister(1),
+		readQuadratureEncoderRegister(2)};
+}
+
 void printQuadratureEncoderRegisters()
 {
-	printf("Encoder counters: %ld, %ld, %ld\n", readQuadratureEncoderRegister(0), readQuadratureEncoderRegister(1), readQuadratureEncoderRegister(2));
+	printCoord3("Encoder counters", readQuadratureEncoders());
 }
 
 
@@ -241,13 +263,6 @@ void spinWheels(int power0, int power1, int power2)
 	spinWheel(2, power2);
 }
 
-// Spin wheel in cm/sec.
-void spinWheelAtVelocity(int wheelId, float velocity)
-{
-	int power = (int)(velocity * wheelPowerNeededPerVelocityUnit);
-	spinWheel(wheelId, power);
-}
-
 void killMotors()
 {
 	spinWheel(0, 0);
@@ -297,8 +312,6 @@ void showSpeedVsVelocityGraph(int wheelId)
 	spinWheel(wheelId, 0);
 }
 
-#define P_PULSES_PER_RADIAN (19456 / 2 / M_PI)
-
 //Two things to calibrate
 
 void startCalibrate(coord2 velocity)
@@ -316,19 +329,73 @@ void startCalibrate(coord2 velocity)
 }
 
 // Body Frame Calculations
+float gme(float M[3][3], int i, int j, int r, int c)
+{
+    return M[(i + r + 1) % 3][(j + c + 1) % 3];
+}
+
+float getSignedMinorDet(float M[3][3], int i, int j)
+{
+    return gme(M, i, j, 0, 0) * gme(M, i, j, 1, 1) - gme(M, i, j, 1, 0) * gme(M, i, j, 0, 1);
+}
+
+float getDet(float M[3][3])
+{
+    return M[0][0] * getSignedMinorDet(M, 0, 0) +
+        M[0][1] * getSignedMinorDet(M, 0, 1) +
+        M[0][2] * getSignedMinorDet(M, 0, 2);
+}
+
+void invertMatrix(float M[3][3], float dest[3][3])
+{
+    float d = getDet(M);
+    for(int i = 0; i < 3; i++)
+        for(int j = 0; j < 3; j++)
+        	dest[j][i] = getSignedMinorDet(M, i, j) / d;
+}
+
+coord2 WHEEL_BASE[] = {(coord2){-4.120, 1.895}, (coord2){4.249, 1.843}, (coord2){-0.142, -3.814}};
+coord2 WHEEL_DIR[] = {(coord2){-0.540, -0.842}, (coord2){-0.376, 0.926}, (coord2){0.997, 0.080}};
+
+float getBodyFrameVectorSpinFactor(coord2 wheelBase, coord2 wheelDir)
+{
+    return utility_dotProduct(
+    		utility_unitVector(utility_rotate(wheelBase, M_PI / 2)), wheelDir)
+    		* utility_dist1(wheelBase);
+}
 
 void calcBodyFrameVectors()
 {
-	M[0][0] = cos(M_PI/180*WHEEL_ANGLES[0]) / P_WHEEL_RADIUS;
-	M[0][1] = sin(M_PI/180*WHEEL_ANGLES[0]) / P_WHEEL_RADIUS;
-	M[0][2] = P_ROBOT_RADIUS								/ P_WHEEL_RADIUS;
-	M[1][0] = cos(M_PI/180*WHEEL_ANGLES[1]) / P_WHEEL_RADIUS;
-	M[1][1] = sin(M_PI/180*WHEEL_ANGLES[1]) / P_WHEEL_RADIUS;
-	M[1][2] = P_ROBOT_RADIUS								/ P_WHEEL_RADIUS;
-	M[2][0] = cos(M_PI/180*WHEEL_ANGLES[2]) / P_WHEEL_RADIUS;
-	M[2][1] = sin(M_PI/180*WHEEL_ANGLES[2]) / P_WHEEL_RADIUS;
-	M[2][2] = P_ROBOT_RADIUS								/ P_WHEEL_RADIUS;
+	M[0][0] = WHEEL_DIR[0].x / P_WHEEL_RADIUS;
+	M[0][1] = WHEEL_DIR[0].y / P_WHEEL_RADIUS;
+	M[0][2] = getBodyFrameVectorSpinFactor(WHEEL_BASE[0], WHEEL_DIR[0]) / P_WHEEL_RADIUS;
+	M[1][0] = WHEEL_DIR[1].x / P_WHEEL_RADIUS;
+	M[1][1] = WHEEL_DIR[1].y / P_WHEEL_RADIUS;
+	M[1][2] = getBodyFrameVectorSpinFactor(WHEEL_BASE[1], WHEEL_DIR[1]) / P_WHEEL_RADIUS;
+	M[2][0] = WHEEL_DIR[2].x / P_WHEEL_RADIUS;
+	M[2][1] = WHEEL_DIR[2].y / P_WHEEL_RADIUS;
+	M[2][2] = getBodyFrameVectorSpinFactor(WHEEL_BASE[2], WHEEL_DIR[2]) / P_WHEEL_RADIUS;
+	invertMatrix(M, M_inverse);
+	printMatrix("M Matrix", M);
+	printMatrix("Inverted matrix", M_inverse);
 }
+
+
+//void calcBodyFrameVectors()
+//{
+//	M[0][0] = cos(M_PI/180*WHEEL_ANGLES[0])  / P_WHEEL_RADIUS;
+//	M[0][1] = -sin(M_PI/180*WHEEL_ANGLES[0]) / P_WHEEL_RADIUS;
+//	M[0][2] = P_ROBOT_RADIUS				 / P_WHEEL_RADIUS;
+//	M[1][0] = cos(M_PI/180*WHEEL_ANGLES[1])  / P_WHEEL_RADIUS;
+//	M[1][1] = -sin(M_PI/180*WHEEL_ANGLES[1]) / P_WHEEL_RADIUS;
+//	M[1][2] = P_ROBOT_RADIUS				 / P_WHEEL_RADIUS;
+//	M[2][0] = cos(M_PI/180*WHEEL_ANGLES[2])  / P_WHEEL_RADIUS;
+//	M[2][1] = -sin(M_PI/180*WHEEL_ANGLES[2]) / P_WHEEL_RADIUS;
+//	M[2][2] = P_ROBOT_RADIUS				 / P_WHEEL_RADIUS;
+//	invertMatrix(M, M_inverse);
+//	printMatrix("M Matrix", M);
+//	printMatrix("Inverted matrix", M_inverse);
+//}
 
 void motorControl_init()
 {
@@ -336,19 +403,36 @@ void motorControl_init()
 	serial_fd = open("/dev/ttySAC0", O_RDWR);
 }
 
-void moveRobotBodyCoordinates(coord3 v) //int[]* worldVelocities, int[]* wheelVelocities)
-{
-	currentBodyVelocity = v;
-	float motor1Speed = M[0][0]*v.x - M[0][1]*v.y + M[0][2]*v.w;
-	float motor2Speed = M[1][0]*v.x - M[1][1]*v.y + M[1][2]*v.w;
-	float motor3Speed = M[2][0]*v.x - M[2][1]*v.y + M[2][2]*v.w;
-	spinWheelAtVelocity(0, motor1Speed);
-	spinWheelAtVelocity(1, motor2Speed);
-	spinWheelAtVelocity(2, motor3Speed);
+float motor1pulsesPerSecond;
+float motor2pulsesPerSecond;
+float motor3pulsesPerSecond;
 
-//	driveMotorWithSignedSpeed(0, motor1Speed * P_PULSES_PER_RADIAN);
-//	driveMotorWithSignedSpeed(1, motor2Speed * P_PULSES_PER_RADIAN);
-//	driveMotorWithSignedSpeed(2, motor3Speed * P_PULSES_PER_RADIAN);
+void driveMotorsAtSpeed(float motor1Speed, float motor2Speed, float motor3Speed)
+{
+	motor1pulsesPerSecond = motor1Speed * pulsesPerRadian;
+	motor2pulsesPerSecond = motor2Speed * pulsesPerRadian;
+	motor3pulsesPerSecond = motor3Speed * pulsesPerRadian;
+	driveMotorWithSignedSpeed(0, motor1pulsesPerSecond);
+	driveMotorWithSignedSpeed(1, motor2pulsesPerSecond);
+	driveMotorWithSignedSpeed(2, motor3pulsesPerSecond);
+}
+
+coord3 matrix_mult(float M[3][3], coord3 v)
+{
+	return (coord3){
+		M[0][0]*v.x + M[0][1]*v.y + M[0][2]*v.w,
+		M[1][0]*v.x + M[1][1]*v.y + M[1][2]*v.w,
+		M[2][0]*v.x + M[2][1]*v.y + M[2][2]*v.w};
+}
+
+coord3 translateBodyCoordinatesToMotorVelocities(coord3 v)
+{
+	return matrix_mult(M, v);
+}
+
+coord3 translateMotorVelocitiesToBodyCoordinates(coord3 motorSpeeds)
+{
+	return matrix_mult(M_inverse, motorSpeeds);
 }
 
 coord3 translateWorldCoordinatesToBodyCoordinates(coord3 robot, coord3 v)
@@ -363,16 +447,28 @@ coord3 translateBodyCoordinatesToWorldCoordinates(coord3 robot, coord3 v)
 	return v;
 }
 
+void moveRobotBodyCoordinates(coord3 v) //int[]* worldVelocities, int[]* wheelVelocities)
+{
+	currentBodyVelocity = v;
+	coord3 motorSpeeds = translateBodyCoordinatesToMotorVelocities(v);
+//	printCoord3("Body velocities", v);
+//	printCoord3("Motor speeds", motorSpeeds);
+//	printCoord3("Reverse calc", translateMotorVelocitiesToBodyCoordinates(motorSpeeds));
+	driveMotorsAtSpeed(motorSpeeds.x, motorSpeeds.y, motorSpeeds.w);
+}
+
 void moveRobotWorldCoordinates(coord3 robot, coord3 v)
 {
 	if(!override)
 	{
+		if(isnan(v.x))
+			v.x = 0;
+		if(isnan(v.y))
+			v.y = 0;
+		if(isnan(v.w))
+			v.w = 0;
 		v = translateWorldCoordinatesToBodyCoordinates(robot, v);
 		moveRobotBodyCoordinates(v);
-	}
-	else
-	{
-		printf("override on\n");
 	}
 }
 
@@ -387,7 +483,7 @@ void setOverride(bool val)
 
 void overrideForSpecifiedTime(double t)
 {
-	printf("Start timer\n");
+	//printf("Start timer\n");
 	startTimer(MOTOR_CONTROL_OVERRIDE_TIMER);
 	timeToOverride = t;
 	setOverride(true);
@@ -395,27 +491,49 @@ void overrideForSpecifiedTime(double t)
 
 std::deque<coord3> pastVelocities;
 
+coord3 lastMotorPositions;
+
 void updateCurrentPosition(bool print)
 {
-//	startTimer(9);
-	robot1currentPosition = robot1cameraPosition;
-	int ticksBehind = (int)(cameraLatency_ms / 1000 * TICKS_PER_SECOND + .5);
-	for(int i = 200 - ticksBehind; i < 200 && i < pastVelocities.size(); i++)
+	coord3 currentMotorPositions = readQuadratureEncoders();
+	coord3 motorPulses = utility_subVector3(currentMotorPositions, lastMotorPositions);
+	coord3 motorRadians = utility_divVector3(motorPulses, pulsesPerRadian);
+	lastMotorPositions = currentMotorPositions;
+	coord3 bodyCoords = translateMotorVelocitiesToBodyCoordinates(motorRadians);
+	coord3 worldCoords = translateBodyCoordinatesToWorldCoordinates(robot1currentPosition, bodyCoords);
+	robot1currentPosition.x = robot1currentPosition.x + worldCoords.x;
+	robot1currentPosition.y = robot1currentPosition.y + worldCoords.y;
+	robot1currentPosition.w = robot1currentPosition.w + worldCoords.w;
+	if(DEBUG_PRINT)
 	{
-		coord3 bodyVelocity = pastVelocities.at(i);
-		if(print && i == 0)
-		{
-			printf("Current position: %f %f %f\n", robot1currentPosition.x, robot1currentPosition.y, robot1currentPosition.w);
-			printf("Body velocity: %f %f %f\n", bodyVelocity.x, bodyVelocity.y, bodyVelocity.w);
-		}
-		coord3 worldVelocity = translateBodyCoordinatesToWorldCoordinates(robot1currentPosition, bodyVelocity);
-		if(print && i == 0)
-			printf("worldVelocity: %f %f %f\n", worldVelocity.x, worldVelocity.y, worldVelocity.w);
-		robot1currentPosition.x = robot1currentPosition.x + worldVelocity.x;
-		robot1currentPosition.y = robot1currentPosition.y + worldVelocity.y;
-		robot1currentPosition.w = robot1currentPosition.w + worldVelocity.w;
+//		printCoord3("Motors", motorRadians);
+//		printCoord3("Body  ", bodyCoords);
+//		printCoord3("-------- Position", robot1currentPosition);
 	}
-	//printf("Time to excecute: %f\n", getTimerTime_ms(9)); //100 us
+
+
+
+////	startTimer(9);
+//	robot1currentPosition = robot1cameraPosition;
+//	int ticksBehind = (int)(cameraLatency_ms / 1000 * TICKS_PER_SECOND + .5);
+////	if(DEBUG_PRINT)
+////		printf("Print out queue\n");
+//	for(int i = 100 - ticksBehind; i < 100 && i < pastVelocities.size(); i++)
+//	{
+//		coord3 bodyVelocity = pastVelocities.at(i);
+////		if(DEBUG_PRINT)
+////		{
+////			printf("  Current position: %f %f %f\n", robot1currentPosition.x, robot1currentPosition.y, robot1currentPosition.w);
+////			printf("  Body velocity: %f %f %f\n", bodyVelocity.x, bodyVelocity.y, bodyVelocity.w);
+////		}
+//		coord3 worldVelocity = translateBodyCoordinatesToWorldCoordinates(robot1currentPosition, bodyVelocity);
+////		if(DEBUG_PRINT)
+////			printf("  worldVelocity: %f %f %f\n", worldVelocity.x, worldVelocity.y, worldVelocity.w);
+//		robot1currentPosition.x = robot1currentPosition.x + worldVelocity.x / TICKS_PER_SECOND;
+//		robot1currentPosition.y = robot1currentPosition.y + worldVelocity.y / TICKS_PER_SECOND;
+//		robot1currentPosition.w = robot1currentPosition.w + worldVelocity.w / TICKS_PER_SECOND;
+//	}
+//	//printf("Time to excecute: %f\n", getTimerTime_ms(9)); //100 us
 }
 
 void motorControl_tick()
@@ -424,12 +542,24 @@ void motorControl_tick()
 	{
 		override = false;
 		killMotors();
-		printf("stop override at %f ms\n", getTimerTime_ms(MOTOR_CONTROL_OVERRIDE_TIMER));
+		//printf("stop override at %f ms\n", getTimerTime_ms(MOTOR_CONTROL_OVERRIDE_TIMER));
 	}
+
+	//coord3 actualBodyVelocity = getBodyVelocity();
 
 	pastVelocities.push_back((coord3)currentBodyVelocity);
 	if(pastVelocities.size() > 100)
 		pastVelocities.pop_front();
 
 	updateCurrentPosition(false);
+}
+
+coord3 lastMotorPositionsTest;
+void printMotorDiffs()
+{
+	coord3 currentMotorPositions = readQuadratureEncoders();
+	coord3 motorPulses = utility_subVector3(currentMotorPositions, lastMotorPositionsTest);
+	coord3 motorPulsesPerRadian = utility_divVector3(motorPulses, 10 * 2 * M_PI);
+	lastMotorPositionsTest = currentMotorPositions;
+	printCoord3("Pulses Per Radian (with 10 rotations)", motorPulsesPerRadian);
 }
