@@ -28,21 +28,21 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::Subscriber sub = n.subscribe("chatter", 10, chatterCallback);
 	ros::Subscriber sub2 = n.subscribe("command", 10, commandCallback);
-//	ros::Publisher pub = n.advertise<beginner_tutorials::Num>("feedback", 5);
+	ros::Publisher pub = n.advertise<beginner_tutorials::Num>("feedback", 5);
 	ros::Rate loop_rate(TICKS_PER_SECOND);
 	int counter = 0;
 	while(ros::ok())
 	{
-//		counter++;
-//		if(counter % 2 == 0)
-//		{
-//			printf("publishing msg \n");
-//			beginner_tutorials::Num msg;
-//			msg.x0 = robot1currentPosition.x;
-//			msg.y0 = robot1currentPosition.y;
-//			msg.w0 = robot1currentPosition.w;
-//			pub.publish(msg);
-//		}
+		counter++;
+		if(counter % 2 == 0)
+		{
+			beginner_tutorials::Num msg;
+			msg.x0 = robot1currentPosition.x;
+			msg.y0 = robot1currentPosition.y;
+			msg.w0 = robot1currentPosition.w;
+			pub.publish(msg);
+		}
+		DEBUG_PRINT = (counter % 25 == 0);
 
 		ros::spinOnce();
 		strategy_tick();
