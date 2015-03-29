@@ -12,6 +12,10 @@ typedef struct {
 } coord3;
 
 typedef struct {
+	float m0, m1, m2;
+} motorVel3;
+
+typedef struct {
 	float x, y;
 } coord2;
 
@@ -46,12 +50,13 @@ long manualTimerTicks = 0;
 //    return coordinates;
 //}
 
-const coord2 P_GOAL = {-460, 0}; // Need to measure
-const float P_CONTROL_K_W = 2;
+const coord2 P_GOAL = {130, 0};
+const float P_GOAL_WIDTH = 75;
 const float P_CONTROL_K_XY = 2; //divided cause in pixels.
-//const float P_MAX_VELOCITY = 40; // Need to measure
-const float P_MAX_VELOCITY = 10; // Need to measure
-const float P_MAX_SPIN = 1; // Need to measure
+const float P_MAX_VELOCITY = 30; // Need to measure
+
+const float P_CONTROL_K_W = 3;
+const float P_MAX_SPIN = 2; // Need to measure
 
 void rotate(coord3* v, float theta)
 {
@@ -59,6 +64,11 @@ void rotate(coord3* v, float theta)
 	float yNew = v->x * sin(theta) + v->y * cos(theta);
 	v->x = xNew;
 	v->y = yNew;
+}
+
+coord2 utility_rotate(coord2 v, float theta)
+{
+	return (coord2){v.x * cos(theta) - v.y * sin(theta), v.x * sin(theta) + v.y * cos(theta)};
 }
 
 coord2 utility_3to2(coord3 v)
@@ -91,6 +101,21 @@ coord2 utility_multVector(coord2 v, float m)
 	return (coord2){v.x * m, v.y * m};
 }
 
+coord3 utility_multVector3(coord3 v, float m)
+{
+	return (coord3){v.x * m, v.y * m, v.w * m};
+}
+
+coord3 utility_divVector3(coord3 v, float m)
+{
+	return (coord3){v.x / m, v.y / m, v.w / m};
+}
+
+coord3 utility_subVector3(coord3 v1, coord3 v2)
+{
+	return (coord3){v1.x - v2.x, v1.y - v2.y, v1.w - v2.w};
+}
+
 coord2 utility_getVector(coord2 p1, coord2 p2)
 {
 	return (coord2){p2.x - p1.x, p2.y - p1.y};
@@ -120,18 +145,24 @@ coord2 utility_vectorWithLength(coord2 v, float l)
 
 float utility_angleMod(float angle)
 {
-	while(angle<0){angle +=2*M_PI;};
-	return fmod(angle + M_PI,(2*M_PI)) - M_PI;
+	while(angle < 0)
+		angle += 2*M_PI;
+	return fmod(angle + M_PI, (2*M_PI)) - M_PI;
 }
 
-int utility_getAngle1(coord2 v)
+float utility_getAngle1(coord2 v)
 {
-	return atan2(v.y, v.x);
+	return atan2f(v.y, v.x);
 }
 
 float utility_getAngle(coord2 p1, coord2 p2)
 {
 	return utility_getAngle1(utility_getVector(p1, p2));
+}
+
+float utility_dotProduct(coord2 v1, coord2 v2)
+{
+	return v1.x * v2.x + v1.y * v2.y;
 }
 
 void sleep_ms(long ms)
@@ -140,14 +171,14 @@ void sleep_ms(long ms)
 	while(clock() - startTime < (ms * 1000)); //CLOCKS_PER_SEC/1000
 }
 
-long timerStartTime[10];
+double timerStartTime[10];
 
-long getTime_ms()
+double getTime_ms()
 {
 	struct timeval tp;
 	gettimeofday(&tp, NULL);
-//	return ((double) tp.tv_sec + (double) tp.tv_usec * 1e-6);
-	return tp.tv_sec*1000 + tp.tv_usec/1000;
+	return ((double) tp.tv_sec *1e3 + (double) tp.tv_usec * 1e-3);
+	//return tp.tv_sec*1000 + tp.tv_usec/1000;
 }
 
 double getTime_s()
@@ -169,14 +200,31 @@ void startTimer(int timerId)
 //	return clock() - timerStartTime[timerId];
 //}
 
-long getTimerTime_ms(int timerId)
+double getTimerTime_ms(int timerId)
 {
 	//return (clock() - timerStartTime[timerId]) / 1000;
 	//return (manualTimerTicks - timerStartTime[timerId]) * 1000 / 20;
 	return (getTime_ms() - timerStartTime[timerId]);
 }
 
+double getTimerTime_s(int timerId)
+{
+	//return (clock() - timerStartTime[timerId]) / 1000;
+	//return (manualTimerTicks - timerStartTime[timerId]) * 1000 / 20;
+	return (getTime_ms() - timerStartTime[timerId]) / 1000;
+}
+
 int sign(int x)
+{
+	if(x < 0)
+		return -1;
+	if(x > 0)
+		return 1;
+	else
+		return 0;
+}
+
+float fsign(float x)
 {
 	if(x < 0)
 		return -1;
