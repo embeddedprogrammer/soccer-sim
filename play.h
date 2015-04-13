@@ -8,9 +8,13 @@
 #ifndef PLAY_H_
 #define PLAY_H_
 
-void play_rushGoal(coord3 robot, coord2 ball);
+void play_rushGoal();
 
-void play_blockGoal(coord3 robot, coord2 ball);
+void play_tick();
+
+void play_blockGoal();
+
+void play_stop();
 
 
 #endif /* PLAY_H_ */
