@@ -42,6 +42,11 @@ coord2 utility_addVector(coord2 p1, coord2 p2)
 	return (coord2){p1.x + p2.x, p1.y + p2.y};
 }
 
+coord3 utility_addVector3(coord3 v1, coord3 v2)
+{
+	return (coord3){v1.x + v2.x, v1.y + v2.y, v1.w + v2.w};
+}
+
 coord2 utility_subVector(coord2 p1, coord2 p2)
 {
 	return (coord2){p1.x - p2.x, p1.y - p2.y};
@@ -179,7 +184,7 @@ void utility_setTime_s(double timeInSeconds)
 	}
 }
 
-int sign(int x)
+int utility_sign(int x)
 {
 	if(x < 0)
 		return -1;
@@ -189,7 +194,7 @@ int sign(int x)
 		return 0;
 }
 
-float fsign(float x)
+float utility_fsign(float x)
 {
 	if(x < 0)
 		return -1;
