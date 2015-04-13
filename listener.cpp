@@ -5,12 +5,14 @@
 #include "time.h"
 #include "stdio.h"
 
+
 #include "motorControl.cpp"
 #include "utility.c"
 #include "strategy.c"
 #include "skill.c"
 #include "play.c"
 #include "calibrate.c"
+#include "control.c"
 
 //#include "strategy.h"
 //#include "motorControl.h"
@@ -22,7 +24,7 @@ bool timeSet = false;
  */
 void chatterCallback(const beginner_tutorials::Num::ConstPtr& msg)
 {
-	receiveCoords((coord3){msg->x0, msg->y0, msg->w0}, (coord3){msg->x1, msg->y1, msg->w1}, (coord2){msg->xb, msg->yb}, msg->t);
+	control_receiveCoords((coord3){msg->x0, msg->y0, msg->w0}, (coord3){msg->x1, msg->y1, msg->w1}, (coord2){msg->xb, msg->yb}, msg->tsys);
 	if(!timeSet)
 	{
 //		utility_setTime_s(msg->tsys);
@@ -32,7 +34,7 @@ void chatterCallback(const beginner_tutorials::Num::ConstPtr& msg)
 
 void commandCallback(const std_msgs::Int32::ConstPtr& msg)
 {
-	pressKey(msg->data);
+	control_pressKey(msg->data);
 }
 
 int main(int argc, char **argv)
@@ -54,12 +56,16 @@ int main(int argc, char **argv)
 			msg.x0 = robot1currentPosition.x;
 			msg.y0 = robot1currentPosition.y;
 			msg.w0 = robot1currentPosition.w;
+			msg.x1 = robot1cameraPositionAverage.x;
+			msg.y1 = robot1cameraPositionAverage.y;
+			msg.w1 = robot1cameraPositionAverage.w;
 			pub.publish(msg);
 		}
 		DEBUG_PRINT = (counter % 25 == 0);
 
 		ros::spinOnce();
 		strategy_tick();
+		play_tick();
 		skill_tick();
 		motorControl_tick();
 		calibrate_tick();
