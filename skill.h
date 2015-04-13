@@ -12,4 +12,8 @@ void skill_goToPoint(coord3 point);
 
 void skill_stop();
 
+void skill_circleBall(int dir);
+void skill_fetchBall();
+void skill_dribbleBall();
+
 #endif /* SKILL_H_ */
