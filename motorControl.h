@@ -15,7 +15,7 @@ typedef struct {
 	long p, i, d, q;
 } pidq;
 
-double cameraLatency_ms = 580;
+double cameraLatency_ms = 200;
 //float pulsesPerRadian = (19456 / 2 / M_PI);
 float pulsesPerRadian = (198100 / 10 / 2 / M_PI); //Accurate to .5%
 
@@ -36,7 +36,8 @@ double timeToOverride;
 coord3 currentBodyVelocity;
 
 coord3 robot1currentPosition;
-coord3 robot1cameraPosition, robot2cameraPosition;
+coord3 robot1cameraPosition, robot2cameraPosition, robot1cameraPositionAverage;
+coord2 ball;
 bool DEBUG_PRINT;
 
 #ifndef M_PI
@@ -135,5 +136,13 @@ void motorControl_tick();
 void motorControl_printMotorDiffs();
 
 void motorControl_setUpdateMode(motorControl_statePredictionModes mode);
+
+void motorControl_scaleMMatrixW(float scaleFactor);
+
+void motorControl_scaleMMatrixXY(float scaleFactor);
+
+void motorControl_printCoord3(const char* str, coord3 v);
+
+void motorControl_printCoord2(const char* str, coord2 v);
 
 #endif /* MOTORCONTROL_H_ */

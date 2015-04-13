@@ -2,7 +2,8 @@
 #define CALIBRATE_H_
 
 enum calibrate_states
-	{notCalibrating, cameraLatency, pidControl, cameraDistance, calibrateMMatrix} calibrate_state;
+	{notCalibrating, cameraLatency, pidControl, cameraDistance, calibrateMMatrix,
+	state_calibrateSpeed, state_XYScaleCalibrate, state_WScaleCalibrate} calibrate_state;
 
 void driveTriDirection(int triDirection, int sgn);
 
@@ -23,6 +24,12 @@ void measureLatency();
 void calibrate_stop();
 
 void calibrate_MMatrix(int dir);
+
+void startSpeedCalibrate();
+
+void startWScaleCalibrate();
+
+void startXYScaleCalibrate();
 
 #endif /* CALIBRATE_H_ */
 

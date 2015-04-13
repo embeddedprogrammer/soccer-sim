@@ -20,9 +20,14 @@ void printMatrix(const char* str, float M[3][3])
 	printf("%s:\n%f %f %f\n%f %f %f\n%f %f %f\n", str, M[0][0], M[0][1], M[0][2], M[1][0], M[1][1], M[1][2], M[2][0], M[2][1], M[2][2]);
 }
 
-void printCoord3(const char* str, coord3 v)
+void motorControl_printCoord3(const char* str, coord3 v)
 {
 	printf("%s: %.2f %.2f %.2f\n", str, v.x, v.y, v.w);
+}
+
+void motorControl_printCoord2(const char* str, coord2 v)
+{
+	printf("%s: %.2f %.2f\n", str, v.x, v.y);
 }
 
 void printCharArray(char command[], int size)
@@ -147,7 +152,7 @@ coord3 readQuadratureEncoders()
 
 void motorControl_printQuadratureEncoderRegisters()
 {
-	printCoord3("Encoder counters", readQuadratureEncoders());
+	motorControl_printCoord3("Encoder counters", readQuadratureEncoders());
 }
 
 
@@ -217,7 +222,7 @@ void setMotorPidConstants(int wheelId, pidq val)
 void motorControl_spinWheel(int wheelId, int power)
 {
 	if(abs(power) > 127)
-		power = 127 * sign(power);
+		power = 127 * utility_sign(power);
 	char command[] = {0, 0, 0, 0};
 	command[0] = wheelAddress[wheelId];
 	int motor = wheelRoboclawPosition[wheelId];
@@ -364,6 +369,9 @@ float motorControl_getBodyFrameVectorSpinFactor(coord2 wheelBase, coord2 wheelDi
 
 //float M_matlab_inv[3][3] = {{-0.381, -0.51, 1.200}, {-1.232, 1.19, 0.070}, {0.121, 1.07, 0.102}};
 
+float cumXYScale = 1;
+float cumWScale = 1;
+
 void motorControl_calcBodyFrameVectors()
 {
 	M[0][0] = cos(M_PI/180*WHEEL_ANGLES[0])  / P_WHEEL_RADIUS;
@@ -375,16 +383,49 @@ void motorControl_calcBodyFrameVectors()
 	M[2][0] = cos(M_PI/180*WHEEL_ANGLES[2])  / P_WHEEL_RADIUS;
 	M[2][1] = -sin(M_PI/180*WHEEL_ANGLES[2]) / P_WHEEL_RADIUS;
 	M[2][2] = P_ROBOT_RADIUS				 / P_WHEEL_RADIUS;
+	motorControl_scaleMMatrixXY(1.75);
+	motorControl_scaleMMatrixW(1.07);
+	cumXYScale = 1;
+	cumWScale = 1;
+
 //	motorControl_invertMatrix(M_matlab_inv, M);
 	motorControl_invertMatrix(M, M_inverse);
 	printMatrix("M Matrix", M);
 	printMatrix("Inverted matrix", M_inverse);
 }
 
+void motorControl_scaleMMatrixXY(float scaleFactor)
+{
+	cumXYScale *= scaleFactor;
+	printf("Cumulative XY scale %f\n", cumXYScale);
+	M[0][0] *= scaleFactor;
+	M[0][1] *= scaleFactor;
+	M[1][0] *= scaleFactor;
+	M[1][1] *= scaleFactor;
+	M[2][0] *= scaleFactor;
+	M[2][1] *= scaleFactor;
+	printMatrix("M Matrix", M);
+	motorControl_invertMatrix(M, M_inverse);
+}
+
+void motorControl_scaleMMatrixW(float scaleFactor)
+{
+	cumWScale *= scaleFactor;
+	printf("Cumulative W scale %f\n", cumWScale);
+	M[0][2] *= scaleFactor;
+	M[1][2] *= scaleFactor;
+	M[2][2] *= scaleFactor;
+	printMatrix("M Matrix", M);
+	motorControl_invertMatrix(M, M_inverse);
+}
+
 void motorControl_init()
 {
 	motorControl_calcBodyFrameVectors();
 	serial_fd = open("/dev/ttySAC0", O_RDWR);
+	setMotorPidConstants(0, (pidq){250000, 130000, 400000, 83000});
+	setMotorPidConstants(1, (pidq){250000, 130000, 400000, 86000});
+	setMotorPidConstants(2, (pidq){250000, 130000, 400000, 66000});
 }
 
 void motorControl_driveMotorsAtSpeed(float motor1Speed, float motor2Speed, float motor3Speed)
@@ -431,9 +472,9 @@ void motorControl_moveRobotBodyCoordinates(coord3 v) //int[]* worldVelocities, i
 {
 	currentBodyVelocity = v;
 	coord3 motorSpeeds = motorControl_translateBodyCoordinatesToMotorVelocities(v);
-//	printCoord3("Body velocities", v);
-//	printCoord3("Motor speeds", motorSpeeds);
-//	printCoord3("Reverse calc", translateMotorVelocitiesToBodyCoordinates(motorSpeeds));
+//	motorControl_printCoord3("Body velocities", v);
+//	motorControl_printCoord3("Motor speeds", motorSpeeds);
+//	motorControl_printCoord3("Reverse calc", translateMotorVelocitiesToBodyCoordinates(motorSpeeds));
 	motorControl_driveMotorsAtSpeed(motorSpeeds.x, motorSpeeds.y, motorSpeeds.w);
 }
 
@@ -508,10 +549,10 @@ void motorControl_updateCurrentPosition(bool print)
 	{
 		motorControl_addBodyVelocityToCurrentPosition(bodyCoords);
 	}
-	else if(motorControl_statePredictionMode == printMotorDiffs)
-	{
-		printCoord3("RadianDiff", motorRadians);
-	}
+//	else if(motorControl_statePredictionMode == printMotorDiffs)
+//	{
+//		printCoord3("RadianDiff", motorRadians);
+//	}
 //printf("Time to excecute: %f\n", getTimerTime_ms(9)); //100 us
 }
 
@@ -534,5 +575,5 @@ void motorControl_printMotorDiffs()
 	coord3 motorPulses = utility_subVector3(currentMotorPositions, lastMotorPositionsTest);
 	coord3 motorPulsesPerRadian = utility_divVector3(motorPulses, 10 * 2 * M_PI);
 	lastMotorPositionsTest = currentMotorPositions;
-	printCoord3("Pulses Per Radian (with 10 rotations)", motorPulsesPerRadian);
+	motorControl_printCoord3("Pulses Per Radian (with 10 rotations)", motorPulsesPerRadian);
 }
