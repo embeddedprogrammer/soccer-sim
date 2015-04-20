@@ -1,0 +1,27 @@
+#!/bin/bash
+xdotool key ctrl+Page_Up
+xdotool type "sudo date -s \"$(date '+%d %b %Y %X')\""
+xdotool key KP_Enter
+sleep 1
+xdotool type "wall-e490"
+xdotool key KP_Enter
+sleep 2
+xdotool type "~/WallE/serialTester.py"
+xdotool key KP_Enter
+sleep 1
+xdotool type "128 21"
+xdotool key KP_Enter
+sleep 1
+xdotool type "exit"
+xdotool key KP_Enter
+sleep 1
+xdotool type "roscore &"
+xdotool key KP_Enter
+sleep 1
+xdotool type "rosrun beginner_tutorials listener"
+xdotool key KP_Enter
+xdotool key ctrl+Page_Down
+xdotool type "rosrun beginner_tutorials talker"
+xdotool key KP_Enter
+
+
