@@ -67,18 +67,33 @@ void motorControl_serial_sendMessage(char command[], int size)
 //	printCharArray(command, size);
 }
 
+bool roboErr = false;
+
+bool motorControl_roboErr()
+{
+	return roboErr;
+}
+
+void motorControl_resetRoboErr()
+{
+	roboErr = false;
+}
+
 int motorControl_serial_readMessage(char result[], int size)
 {
 	int len;
 	for(int i = 0; i < 100; i++)
 	{
-		sleep_ms(2);
+		utility_sleep_ms(2);
 		len = read(serial_fd, result, size);
 		if(len > 0)
 			break;
 	}
 	if(len != size)
+	{
 		printf("Error reading from serial port. Only received %d out of %d characters\n", len, size);
+		roboErr = true;
+	}
 	return len;
 }
 
@@ -106,7 +121,7 @@ void motorControl_emptyBuffer()
 	int i;
 	for(i = 0; i < 100; i++)
 	{
-		sleep_ms(1);
+		utility_sleep_ms(1);
 		if(read(serial_fd, result, 1) != 0)
 		{
 			if(i == 0)
@@ -134,7 +149,17 @@ long motorControl_readQuadratureEncoderRegister(int wheelId)
 
 	if(len < 6 || motorControl_calcChecksum2(command, 2, result, 5) != result[5])
 	{
-		printf("Error: Checksum does not match\n");
+		printf("Error: Checksum does not match.\n");
+//		if(len == 6)
+//		{
+//			printf("Error: Checksum does not match. Empty buffer\n");
+//			motorControl_emptyBuffer();
+//		}
+//		else
+//		{
+//			printf("Error: Checksum does not match. Data corruption\n");
+//		}
+		roboErr = true;
 		return (long)((wheelId == 0) ? lastMotorPositions.x :
 				((wheelId == 1) ? lastMotorPositions.y : lastMotorPositions.w));
 	}
@@ -248,12 +273,17 @@ void motorControl_spinWheels(int power0, int power1, int power2)
 	motorControl_spinWheel(2, power2);
 }
 
+coord2 lastWV = (coord2){0, 0};
+float lastWW = 0;
+
 void motorControl_killMotors()
 {
 	motorControl_spinWheel(0, 0);
 	motorControl_spinWheel(1, 0);
 	motorControl_spinWheel(2, 0);
 	currentBodyVelocity = (coord3){0, 0, 0};
+	lastWV = (coord2){0, 0};
+	lastWW = 0;
 }
 
 void motorControl_driveMotorWithSignedSpeed(int wheelId, long qSpeed)
@@ -292,7 +322,7 @@ void motorControl_showSpeedVsVelocityGraph(int wheelId)
 //		driveMotorWithSignedSpeed(wheelId, speed);
 		int speed = i;
 		motorControl_spinWheel(wheelId, speed);
-		sleep_ms(100);
+		utility_sleep_ms(100);
 		long actual = motorControl_readMotorSpeed(wheelId);
 		printf("%d\t%ld\n", speed, actual);
 	}
@@ -458,13 +488,13 @@ coord3 motorControl_translateMotorVelocitiesToBodyCoordinates(coord3 motorSpeeds
 
 coord3 motorControl_translateWorldCoordinatesToBodyCoordinates(coord3 robot, coord3 v)
 {
-	rotate(&v, -robot.w + M_PI/2);
+	utility_rotate2(&v, -robot.w + M_PI/2);
 	return v;
 }
 
 coord3 motorControl_translateBodyCoordinatesToWorldCoordinates(coord3 robot, coord3 v)
 {
-	rotate(&v, robot.w - M_PI/2);
+	utility_rotate2(&v, robot.w - M_PI/2);
 	return v;
 }
 
@@ -488,7 +518,31 @@ void motorControl_moveRobotWorldCoordinates(coord3 robot, coord3 v)
 			v.y = 0;
 		if(isnan(v.w))
 			v.w = 0;
-		v = motorControl_translateWorldCoordinatesToBodyCoordinates(robot, v);
+
+		if(robot1currentPosition.x > P_FIELD_WIDTH && v.x > 0)
+			v.x = 0;
+		if(robot1currentPosition.x < -P_FIELD_WIDTH && v.x < 0)
+			v.x = 0;
+		if(robot1currentPosition.y > P_FIELD_HEIGHT && v.y > 0)
+			v.y = 0;
+		if(robot1currentPosition.y < -P_FIELD_HEIGHT && v.y < 0)
+			v.y = 0;
+
+
+		coord2 diffXYVel = utility_subVector(utility_3to2(v), lastWV);
+		if(utility_dist1(diffXYVel) > P_MAX_VEL_ACC)
+			diffXYVel = utility_vectorWithLength(diffXYVel, P_MAX_VEL_ACC);
+		lastWV = utility_addVector(lastWV, diffXYVel);
+
+		float diffWVel = v.w - lastWW;
+		if(fabs(diffWVel) > P_MAX_SPIN_ACC)
+			diffWVel = utility_fsign(diffWVel) * P_MAX_SPIN_ACC;
+
+		lastWW += diffWVel;
+
+		//motorControl_printCoord3("Current velocity", (coord3){lastWV.x, lastWV.y, lastWW});
+
+		v = motorControl_translateWorldCoordinatesToBodyCoordinates(robot, (coord3){lastWV.x, lastWV.y, lastWW});
 		motorControl_moveRobotBodyCoordinates(v);
 	}
 }
@@ -505,7 +559,7 @@ void motorControl_setOverride(bool val)
 void motorControl_overrideForSpecifiedTime(double t)
 {
 	//printf("Start timer\n");
-	startTimer(MOTOR_CONTROL_OVERRIDE_TIMER);
+	utility_startTimer(MOTOR_CONTROL_OVERRIDE_TIMER);
 	timeToOverride = t;
 	motorControl_setOverride(true);
 }
@@ -560,7 +614,7 @@ void motorControl_updateCurrentPosition(bool print)
 
 void motorControl_tick()
 {
-	if(override && getTimerTime_ms(MOTOR_CONTROL_OVERRIDE_TIMER) > timeToOverride)
+	if(override && utility_getTimerTime_ms(MOTOR_CONTROL_OVERRIDE_TIMER) > timeToOverride)
 	{
 		override = false;
 		motorControl_killMotors();
