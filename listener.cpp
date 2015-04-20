@@ -5,7 +5,6 @@
 #include "time.h"
 #include "stdio.h"
 
-
 #include "motorControl.cpp"
 #include "utility.c"
 #include "strategy.c"
@@ -16,6 +15,7 @@
 
 //#include "strategy.h"
 //#include "motorControl.h"
+
 
 bool timeSet = false;
 
@@ -31,6 +31,7 @@ void chatterCallback(const beginner_tutorials::Num::ConstPtr& msg)
 		timeSet = true;
 	}
 }
+
 
 void commandCallback(const std_msgs::Int32::ConstPtr& msg)
 {

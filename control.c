@@ -36,6 +36,8 @@ double currentTime;
 #define KALMAN_SAMPLES 5
 coord3 recentCoords[KALMAN_SAMPLES];
 
+int ballOffFieldTicks;
+
 void control_receiveCoords(coord3 pRobot1, coord3 pRobot2, coord2 pBall, double t)
 {
 	robot1cameraPositionAverage = (coord3){0, 0, 0};
@@ -52,7 +54,17 @@ void control_receiveCoords(coord3 pRobot1, coord3 pRobot2, coord2 pBall, double 
 	}
 	robot1cameraPosition = pRobot1;
 	robot2cameraPosition = pRobot2;
-	ball = pBall;
+	if(isnan(pBall.x))
+	{
+		ballOffFieldTicks++;
+		if(ballOffFieldTicks > 15)
+			ball = pBall;
+	}
+	else
+	{
+		ball = pBall;
+		ballOffFieldTicks = 0;
+	}
 //	printf("%.2f %.2f %.2f\n", ball.x, ball.y, t);
 	currentTime = t;
 }
@@ -89,7 +101,7 @@ void control_pressKey(int key)
 		motorControl_setUpdateMode(manuallyUpdate);
 		break;
 	case KEY_a + ('c' - 'a'):
-		startCalibrate(pidControl);
+		calibrate_startCalibrate(pidControl);
 		break;
 	case KEY_a + ('d' - 'a'):
 		break;
@@ -105,9 +117,12 @@ void control_pressKey(int key)
 		break;
 	case KEY_a + ('f' - 'a'):
 		P_CONTROL_K_XY = 3;
-		P_MAX_VELOCITY = 45;
+		P_MAX_VELOCITY = 50;
+		P_MAX_VEL_ACC = 10;
+
 		P_CONTROL_K_W = 3;
-		P_MAX_SPIN = 1;
+		P_MAX_SPIN = 1.5;
+		P_MAX_SPIN_ACC = .5;
 		//motorControl_driveMotorWithSignedSpeed(0, 0);
 		break;
 	case KEY_a + ('g' - 'a'):
@@ -141,12 +156,15 @@ void control_pressKey(int key)
 		//motorControl_printMotorDiffs();
 		break;
 	case KEY_a + ('n' - 'a'):
-		startWScaleCalibrate();
+		calibrate_startWScaleCalibrate();
 		break;
 	case KEY_a + ('o' - 'a'):
-		startXYScaleCalibrate();
+		calibrate_startXYScaleCalibrate();
 		break;
 	case KEY_a + ('p' - 'a'):
+		//printf("Rand #: %f\n", ((float)rand()) / RAND_MAX);
+
+		calibrate_startRoboclawErrCalibrate();
 		break;
 	case KEY_a + ('q' - 'a'):
 		motorControl_printMotorDiffs();
@@ -169,19 +187,19 @@ void control_pressKey(int key)
 		printf("Encoder: %ld\n", motorControl_readQuadratureEncoderRegister(0));
 		break;
 	case KEY_a + ('v' - 'a'):
-		startSpeedCalibrate();
+		calibrate_startSpeedCalibrate();
 		break;
 	case KEY_a + ('w' - 'a'):
 		motorControl_printPidConstants();
 		break;
 	case KEY_a + ('x' - 'a'):
-		startCalibrate(cameraDistance);
+		calibrate_startCalibrate(cameraDistance);
 		break;
 	case KEY_a + ('y' - 'a'):
 		motorControl_setUpdateMode(constantlyUpdate);
 		break;
 	case KEY_a + ('z' - 'a'):
-		startMeasureLatency();
+		calibrate_startMeasureLatency();
 		break;
 	}
 	if ((key & (~MODIFIER_CTRL)) >= KEY_LEFT
@@ -214,22 +232,22 @@ void control_pressKey(int key)
 		switch (key)
 		{
 		case KEY_LEFT:
-			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { -30, 0, 0 });
+			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { -40, 0, 0 });
 			break;
 		case KEY_UP:
-			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 0, 30, 0 });
+			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 0, 40, 0 });
 			break;
 		case KEY_RIGHT:
-			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 30, 0, 0 });
+			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 40, 0, 0 });
 			break;
 		case KEY_DOWN:
-			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 0, -30, 0 }); //50
+			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 0, -40, 0 }); //50
 			break;
 		case KEY_LEFT | MODIFIER_CTRL:
-			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 0, 0, 1.5 }); //2
+			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 0, 0, 3 }); //2
 			break;
 		case KEY_RIGHT | MODIFIER_CTRL:
-			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 0, 0, -1.5 });
+			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 0, 0, -3 });
 			break;
 		}
 		motorControl_overrideForSpecifiedTime(750);

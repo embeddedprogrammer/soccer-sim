@@ -44,6 +44,10 @@ bool DEBUG_PRINT;
 #define M_PI 3.1415926535
 #endif
 
+bool motorControl_roboErr();
+
+void motorControl_resetRoboErr();
+
 enum motorControl_statePredictionModes
 	{constantlyUpdate, manuallyUpdate, printMotorDiffs} motorControl_statePredictionMode;
 
