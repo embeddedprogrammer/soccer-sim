@@ -28,6 +28,12 @@ void play_continue_rushGoal()
 	float ballAngle = utility_getAngle(utility_3to2(robot1currentPosition), ball);
 	float goalAngle = utility_getAngle(ball, P_GOAL);
 	float angleDiff = utility_angleMod(goalAngle - ballAngle);
+
+	coord2 vectorToBall = utility_subVector(ball, utility_3to2(robot1currentPosition));
+	coord2 vectorToGoal = utility_subVector(P_GOAL, utility_3to2(robot1currentPosition));
+	float distToLine = utility_findDistanceToLine(ball, utility_3to2(robot1currentPosition), vectorToGoal);
+	float ballBetweenRobotAndGoal = utility_dotProduct(vectorToGoal, vectorToBall);
+	//printf("Dist to line: %f Dot Product: %f\n", distToLine, ballBetweenRobotAndGoal);
 	switch (rushGoal_state)
 	{
 	case rushGoal_start:
@@ -35,7 +41,7 @@ void play_continue_rushGoal()
 		rushGoal_state = rushGoal_state_getBall;
 		break;
 	case rushGoal_state_getBall:
-		if(fabs(ballAngle - goalAngle) < .2)
+		if(distToLine < 10 && ballBetweenRobotAndGoal > 0)
 		{
 			rushGoal_state = rushGoal_state_pushToGoal;
 //			printf("dribble ball\n");
@@ -43,11 +49,11 @@ void play_continue_rushGoal()
 		}
 		break;
 	case rushGoal_state_pushToGoal:
-		if(fabs(ballAngle - goalAngle) > .2 && utility_dist(utility_3to2(robot1currentPosition), ball) > 10)
+		if(distToLine > 10 || ballBetweenRobotAndGoal < 0)
 		{
 			skill_fetchBall();
 			rushGoal_state = rushGoal_state_getBall;
-//			printf("get ball\n");
+//			printf("fetch ball\n");
 		}
 		break;
 	}
