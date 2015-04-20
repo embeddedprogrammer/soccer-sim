@@ -3,6 +3,7 @@
 #include "play.h"
 #include "calibrate.h"
 #include "control.h"
+#include "motorControl.h"
 
 long calibrate_motor0sum;
 long calibrate_motor1sum;
@@ -22,7 +23,7 @@ static int calibrateTriDirection;
 
 coord3 startPosition;
 
-void driveTriDirection(int triDirection, int sgn)
+void calibrate_driveTriDirection(int triDirection, int sgn)
 {
 	if(calibrate_state == pidControl)
 	{
@@ -46,7 +47,7 @@ void driveTriDirection(int triDirection, int sgn)
 	}
 }
 
-void measure1(int a)
+void calibrate_measure1(int a)
 {
 	if(a == 0)
 		calibrate_motor0sum += labs(motorControl_readQuadratureEncoderRegister(0));
@@ -56,21 +57,21 @@ void measure1(int a)
 		calibrate_motor2sum += labs(motorControl_readQuadratureEncoderRegister(2));
 }
 
-void measure2(int a, int b)
+void calibrate_measure2(int a, int b)
 {
-	measure1(a); measure1(b);
+	calibrate_measure1(a); calibrate_measure1(b);
 }
 
-void measureTriDirection(int triDirection)
+void calibrate_measureTriDirection(int triDirection)
 {
 	if(calibrate_state == pidControl)
 	{
 		if(triDirection == 0)
-			measure2(0, 1);
+			calibrate_measure2(0, 1);
 		else if(triDirection == 1)
-			measure2(1, 2);
+			calibrate_measure2(1, 2);
 		else if(triDirection == 2)
-			measure2(0, 2);
+			calibrate_measure2(0, 2);
 	}
 	else if(calibrate_state == cameraDistance)
 	{
@@ -84,30 +85,30 @@ void measureTriDirection(int triDirection)
 	}
 }
 
-void continueCalibrate()
+void calibrate_continueCalibrate()
 {
 	if(calibrateState == 0 && calibrateTriDirection < 3)
 	{
-		startTimer(CALIBRATE_TIMER);
+		utility_startTimer(CALIBRATE_TIMER);
 		if(calibrate_state == pidControl)
 			motorControl_resetAllQuadratureEncoderCounters();
 		robot1currentPosition = robot1cameraPosition;
 		startPosition = robot1cameraPosition;
 		if(calibrateForwardBackward == 0)
-			driveTriDirection(calibrateTriDirection, 1);
+			calibrate_driveTriDirection(calibrateTriDirection, 1);
 		else
-			driveTriDirection(calibrateTriDirection, -1);
+			calibrate_driveTriDirection(calibrateTriDirection, -1);
 		calibrateState++;
 	}
-	else if(calibrateState == 1 && getTimerTime_ms(CALIBRATE_TIMER) > CALIBRATE_DRIVE_TIME)
+	else if(calibrateState == 1 && utility_getTimerTime_ms(CALIBRATE_TIMER) > CALIBRATE_DRIVE_TIME)
 	{
-		startTimer(CALIBRATE_TIMER);
+		utility_startTimer(CALIBRATE_TIMER);
 		motorControl_killMotors();
 		calibrateState++;
 	}
-	else if(calibrateState == 2 && getTimerTime_ms(CALIBRATE_TIMER) > CALIBRATE_WAIT_TO_MEASURE_TIME)
+	else if(calibrateState == 2 && utility_getTimerTime_ms(CALIBRATE_TIMER) > CALIBRATE_WAIT_TO_MEASURE_TIME)
 	{
-		measureTriDirection(calibrateTriDirection);
+		calibrate_measureTriDirection(calibrateTriDirection);
 		calibrateState = 0;
 		calibrateForwardBackward++;
 		if(calibrateForwardBackward == 2)
@@ -140,25 +141,25 @@ void continueCalibrate()
 
 int latencyState;
 
-void startMeasureLatency()
+void calibrate_startMeasureLatency()
 {
 	calibrate_state = cameraLatency;
 	latencyState = 0;
 }
 
-void measureLatency()
+void calibrate_measureLatency()
 {
 	if(latencyState == 0)
 	{
 		startPosition = robot1cameraPosition;
-		motorControl_moveRobotWorldCoordinates(robot1cameraPosition, (coord3) { 30, 0, 0 });
+		motorControl_moveRobotBodyCoordinates((coord3){0, 30, 0});
 		latencyState = 1;
-		startTimer(LATENCY_TIMER);
+		utility_startTimer(LATENCY_TIMER);
 	}
 	else if(latencyState == 1 && utility_dist3(robot1cameraPosition, startPosition) > .5)
 	{
 		motorControl_killMotors();
-		cameraLatency_ms = getTimerTime_ms(LATENCY_TIMER) - 170;
+		cameraLatency_ms = utility_getTimerTime_ms(LATENCY_TIMER) - 170;
 		printf("Latency of camera: %f ms\n", cameraLatency_ms);
 		latencyState = 2;
 	}
@@ -171,7 +172,7 @@ void continueMCalibrate()
 {
 	if(calibrateState == 0 && calibrateTriDirection < 3)
 	{
-		startTimer(CALIBRATE_TIMER);
+		utility_startTimer(CALIBRATE_TIMER);
 		if(mMatrixDir == 0)
 			motorControl_driveMotorsAtSpeed(20, 0, 0);
 		if(mMatrixDir == 1)
@@ -187,7 +188,7 @@ void continueMCalibrate()
 		calibrateState++;
 		motorControl_setUpdateMode(printMotorDiffs);
 	}
-	else if(calibrateState == 1 && getTimerTime_ms(CALIBRATE_TIMER) > 3000)
+	else if(calibrateState == 1 && utility_getTimerTime_ms(CALIBRATE_TIMER) > 3000)
 	{
 		motorControl_setUpdateMode(constantlyUpdate);
 		motorControl_killMotors();
@@ -207,7 +208,7 @@ void calibrate_stop()
 	calibrate_state = notCalibrating;
 }
 
-void startCalibrate(calibrate_states state)
+void calibrate_startCalibrate(calibrate_states state)
 {
 	calibrate_state = state;
 	calibrateState = 0;
@@ -226,10 +227,10 @@ float calibrateSpeed = 0;
 
 #define CALIBRATE_DRIVE_TIME2 1000
 
-void startSpeedCalibrate()
+void calibrate_startSpeedCalibrate()
 {
 	calibrate_state = state_calibrateSpeed;
-	startTimer(CALIBRATE_TIMER);
+	utility_startTimer(CALIBRATE_TIMER);
 	motorControl_statePredictionMode = manuallyUpdate;
 	startPosition = robot1currentPosition;
 	calibrateSpeed = 0;
@@ -237,7 +238,7 @@ void startSpeedCalibrate()
 
 void continueSpeedCalibrate()
 {
-	if(getTimerTime_ms(CALIBRATE_TIMER) > CALIBRATE_DRIVE_TIME2)
+	if(utility_getTimerTime_ms(CALIBRATE_TIMER) > CALIBRATE_DRIVE_TIME2)
 	{
 		float theActualSpeed = utility_dist3(startPosition, robot1currentPosition) / CALIBRATE_DRIVE_TIME2 * 1000;
 		printf("Desired speed %f Actual speed: %f\n", calibrateSpeed, theActualSpeed);
@@ -247,7 +248,7 @@ void continueSpeedCalibrate()
 		{
 			motorControl_moveRobotBodyCoordinates((coord3){0, calibrateSpeed, 0});
 			startPosition = robot1currentPosition;
-			startTimer(CALIBRATE_TIMER);
+			utility_startTimer(CALIBRATE_TIMER);
 		}
 		else
 		{
@@ -266,11 +267,11 @@ void continueSpeedCalibrate()
 #define CALIBRATE_XY_SCALE_WAIT_TO_MEASURE 1500
 int calibrateXYScaleState;
 
-void startXYScaleCalibrate()
+void calibrate_startXYScaleCalibrate()
 {
 	printf("start xy\n");
 	calibrate_state = state_XYScaleCalibrate;
-	startTimer(CALIBRATE_TIMER);
+	utility_startTimer(CALIBRATE_TIMER);
 	calibrateXYScaleState = 0;
 	motorControl_statePredictionMode = manuallyUpdate;
 }
@@ -283,16 +284,16 @@ void continueXYScaleCalibrate()
 		motorControl_moveRobotBodyCoordinates((coord3){0, CALIBRATE_XY_SCALE_DRIVE_SPEED, 0});
 		robot1currentPosition = robot1cameraPositionAverage;
 		startPosition = robot1cameraPositionAverage;
-		startTimer(CALIBRATE_TIMER);
+		utility_startTimer(CALIBRATE_TIMER);
 		calibrateXYScaleState++;
 	}
-	else if(calibrateXYScaleState == 1 && getTimerTime_ms(CALIBRATE_TIMER) > CALIBRATE_XY_SCALE_DRIVE_TIME)
+	else if(calibrateXYScaleState == 1 && utility_getTimerTime_ms(CALIBRATE_TIMER) > CALIBRATE_XY_SCALE_DRIVE_TIME)
 	{
 		motorControl_killMotors();
-		startTimer(CALIBRATE_TIMER);
+		utility_startTimer(CALIBRATE_TIMER);
 		calibrateXYScaleState++;
 	}
-	else if(calibrateXYScaleState == 2 && getTimerTime_ms(CALIBRATE_TIMER) > CALIBRATE_XY_SCALE_WAIT_TO_MEASURE)
+	else if(calibrateXYScaleState == 2 && utility_getTimerTime_ms(CALIBRATE_TIMER) > CALIBRATE_XY_SCALE_WAIT_TO_MEASURE)
 	{
 		float encoderDistance = utility_dist3(startPosition, robot1currentPosition);
 		float actualDistance = utility_dist3(startPosition, robot1cameraPositionAverage);
@@ -309,10 +310,10 @@ void continueXYScaleCalibrate()
 #define CALIBRATE_W_SCALE_WAIT_TO_MEASURE 1500
 int calibrateWScaleState;
 
-void startWScaleCalibrate()
+void calibrate_startWScaleCalibrate()
 {
 	calibrate_state = state_WScaleCalibrate;
-	startTimer(CALIBRATE_TIMER);
+	utility_startTimer(CALIBRATE_TIMER);
 	calibrateWScaleState = 0;
 	motorControl_statePredictionMode = manuallyUpdate;
 }
@@ -324,16 +325,16 @@ void continueWScaleCalibrate()
 		motorControl_moveRobotBodyCoordinates((coord3){0, 0, CALIBRATE_W_SCALE_DRIVE_SPEED});
 		robot1currentPosition = robot1cameraPositionAverage;
 		startPosition = robot1cameraPositionAverage;
-		startTimer(CALIBRATE_TIMER);
+		utility_startTimer(CALIBRATE_TIMER);
 		calibrateWScaleState++;
 	}
-	else if(calibrateWScaleState == 1 && getTimerTime_ms(CALIBRATE_TIMER) > CALIBRATE_W_SCALE_DRIVE_TIME)
+	else if(calibrateWScaleState == 1 && utility_getTimerTime_ms(CALIBRATE_TIMER) > CALIBRATE_W_SCALE_DRIVE_TIME)
 	{
 		motorControl_killMotors();
-		startTimer(CALIBRATE_TIMER);
+		utility_startTimer(CALIBRATE_TIMER);
 		calibrateWScaleState++;
 	}
-	else if(calibrateWScaleState == 2 && getTimerTime_ms(CALIBRATE_TIMER) > CALIBRATE_W_SCALE_WAIT_TO_MEASURE)
+	else if(calibrateWScaleState == 2 && utility_getTimerTime_ms(CALIBRATE_TIMER) > CALIBRATE_W_SCALE_WAIT_TO_MEASURE)
 	{
 		float encoderSpin = utility_angleMod(robot1currentPosition.w - startPosition.w);
 		float actualSpin = utility_angleMod(robot1cameraPositionAverage.w - startPosition.w);
@@ -345,6 +346,80 @@ void continueWScaleCalibrate()
 	}
 }
 
+
+#define ROBO_CLAW_JITTER_ACCEL 1
+float roboclawErrConstantSpeed = -5;
+float roboclawErrJitterSpeed;
+int roboclawErrDir;
+int roboclawErrState;
+int roboclawErrWaitCycles;
+#define ROBO_CLAW_WAIT_CYCLE_TICKS 1
+
+void calibrate_startRoboclawErrCalibrate()
+{
+	roboclawErrState = 0;
+	roboclawErrDir = 1;
+	roboclawErrJitterSpeed = 0;
+	calibrate_state = state_RoboclawErr;
+	motorControl_resetRoboErr();
+	roboclawErrConstantSpeed += 5;
+//	printf("Calibrate roboclaw error with constant speed %f plus jitter and %d wait cycles\n", roboclawErrConstantSpeed, ROBO_CLAW_WAIT_CYCLE_TICKS);
+	printf("Calibrate roboclaw error with random speeds\n");
+
+	P_MAX_VEL_ACC = 0;
+	P_MAX_SPIN_ACC = 0;
+}
+
+float getRand(float maxNum)
+{
+	return ((float)rand()) * maxNum / RAND_MAX;
+}
+
+void calibrate_continueRoboclawErrCalibrate()
+{
+	if(roboclawErrState == 0)
+	{
+		roboclawErrWaitCycles++;
+		if(motorControl_roboErr())
+		{
+			printf("Error in cmc. Jittering stopped at %f speed\n", roboclawErrJitterSpeed);
+			roboclawErrState = 1;
+			motorControl_killMotors();
+		}
+		else if(roboclawErrWaitCycles >= ROBO_CLAW_WAIT_CYCLE_TICKS)
+		{
+			roboclawErrWaitCycles = 0;
+			if(DEBUG_PRINT)
+				printf("Jitter speed: %f\n", roboclawErrJitterSpeed);
+			roboclawErrDir *= -1;
+			roboclawErrJitterSpeed += ((float)ROBO_CLAW_JITTER_ACCEL) / TICKS_PER_SECOND * ROBO_CLAW_WAIT_CYCLE_TICKS;
+			P_MAX_VEL_ACC = roboclawErrJitterSpeed;
+			P_MAX_SPIN_ACC = 0;
+
+			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3){getRand(20) * roboclawErrDir, getRand(20) * roboclawErrDir, getRand(5) * roboclawErrDir});
+//			motorControl_moveRobotBodyCoordinates((coord3){0, roboclawErrConstantSpeed + roboclawErrJitterSpeed * roboclawErrDir, 0});
+		}
+
+	}
+//	else if(roboclawErrState == 1)
+//	{
+//		utility_startTimer(CALIBRATE_TIMER);
+//		roboclawErrState = 2;
+//
+//		utility_getTimerTime_ms(CALIBRATE_TIMER)
+//
+//	}
+//	else if(roboclawErrState == 2)
+//	{
+//		if(utility_getTimerTime_ms(CALIBRATE_TIMER) > 200)
+//		{
+//			roboclawErrState = 3;
+//
+//		}
+//
+//	}
+}
+
 void calibrate_tick()
 {
 	switch (calibrate_state)
@@ -352,11 +427,11 @@ void calibrate_tick()
 	case notCalibrating:
 		break;
 	case cameraLatency:
-		measureLatency();
+		calibrate_measureLatency();
 		break;
 	case pidControl:
 	case cameraDistance:
-		continueCalibrate();
+		calibrate_continueCalibrate();
 		break;
 	case calibrateMMatrix:
 		continueMCalibrate();
@@ -369,6 +444,9 @@ void calibrate_tick()
 		break;
 	case state_WScaleCalibrate:
 		continueWScaleCalibrate();
+		break;
+	case state_RoboclawErr:
+		calibrate_continueRoboclawErrCalibrate();
 		break;
 	}
 }

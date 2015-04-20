@@ -3,33 +3,35 @@
 
 enum calibrate_states
 	{notCalibrating, cameraLatency, pidControl, cameraDistance, calibrateMMatrix,
-	state_calibrateSpeed, state_XYScaleCalibrate, state_WScaleCalibrate} calibrate_state;
+	state_calibrateSpeed, state_XYScaleCalibrate, state_WScaleCalibrate, state_RoboclawErr} calibrate_state;
 
-void driveTriDirection(int triDirection, int sgn);
+void calibrate_driveTriDirection(int triDirection, int sgn);
 
-void measure1(int a);
+void calibrate_measure1(int a);
 
-void measure2(int a, int b);
+void calibrate_measure2(int a, int b);
 
-void measureTriDirection(int triDirection);
+void calibrate_measureTriDirection(int triDirection);
 
-void startCalibrate(calibrate_states state);
+void calibrate_startCalibrate(calibrate_states state);
 
-void continueCalibrate();
+void calibrate_continueCalibrate();
 
-void startMeasureLatency();
+void calibrate_startMeasureLatency();
 
-void measureLatency();
+void calibrate_measureLatency();
 
 void calibrate_stop();
 
 void calibrate_MMatrix(int dir);
 
-void startSpeedCalibrate();
+void calibrate_startSpeedCalibrate();
 
-void startWScaleCalibrate();
+void calibrate_startWScaleCalibrate();
 
-void startXYScaleCalibrate();
+void calibrate_startXYScaleCalibrate();
+
+void calibrate_startRoboclawErrCalibrate();
 
 #endif /* CALIBRATE_H_ */
 
