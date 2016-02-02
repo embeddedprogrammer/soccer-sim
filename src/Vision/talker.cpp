@@ -9,17 +9,6 @@
  * This tutorial demonstrates simple sending of messages over the ROS system.
  */
  
-#define KEY_LEFT  1113937
-#define KEY_UP    1113938
-#define KEY_RIGHT 1113939
-#define KEY_DOWN  1113940
-#define KEY_ESC   1048603
-#define KEY_SPACE 1048608
-#define KEY_DEL 1114111
-#define KEY_a 1048673
-#define KEY_A 1179713
-#define KEY_1 1048625
-
 void feedbackCallback(const walle::Num::ConstPtr& msg)
 {
 	currentx = msg->x0;

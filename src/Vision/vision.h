@@ -36,8 +36,29 @@ int opponentC[6];
 int ballC[6];
 
 #define DEBUG_CYCLE_COUNT 100
+
+#define KEY_LEFT  1113937
+#define KEY_UP    1113938
+#define KEY_RIGHT 1113939
+#define KEY_DOWN  1113940
+#define KEY_SPACE 1048608
+#define KEY_DEL 1114111
+#define KEY_1 1048625
+
+//#define KEY_ESC 27
+//#define KEY_ZERO 48
+//#define KEY_a 97
+//#define KEY_A 65
+#define KEY_ESC 1048603
+#define KEY_A 1179713
 #define KEY_ZERO 1048624
 #define KEY_a 1048673
+
+#define KEY_1 1048625
+#define KEY_ENTER 1048586
+#define MODIFIER_SHIFT (1 << 16)
+#define MODIFIER_CTRL (1 << 18)
+#define MODIFIER_ALT (1 << 19)
 
 Mat imgHSV;
 Mat imgOriginal;
@@ -50,28 +71,12 @@ bool erodeAndDilate = true;
 int imageShown = 0;
 int debugCount = 0;
 
-//VideoCapture cap;
-VideoCapture cap; //(0);
+VideoCapture cap;
 
 typedef struct {float x, y;} coord2;
 typedef struct {float x, y, w;} coord3;
 typedef struct {coord3 robot1, robot2; coord2 ball; double t, tSys;} visionCoords;
 
-#define KEY_LEFT  1113937
-#define KEY_UP    1113938
-#define KEY_RIGHT 1113939
-#define KEY_DOWN  1113940
-#define KEY_ESC   1048603
-#define KEY_SPACE 1048608
-#define KEY_DEL 1114111
-#define KEY_a 1048673
-#define KEY_A 1179713
-#define KEY_1 1048625
-
-#define KEY_ENTER 1048586
-#define MODIFIER_SHIFT (1 << 16)
-#define MODIFIER_CTRL (1 << 18)
-#define MODIFIER_ALT (1 << 19)
 int swapMultiplier = 1;
 
 void createImageWindow()
@@ -115,7 +120,8 @@ void vision_init()
 // our camera - http://192.168.1.10:8080/stream?topic=/image&dummy=param.mjpg
 
 //	cap.open("http://192.168.1.90/mjpg/video.mjpg");
-	cap.open("http://192.168.1.10:8080/stream?topic=/image&dummy=param.mjpg");
+//	cap.open("http://192.168.1.10:8080/stream?topic=/image&dummy=param.mjpg");
+  cap.open(0);
 
 	if ( !cap.isOpened() )
 	{
@@ -445,6 +451,10 @@ void keyPress(int key)
 	case (KEY_ESC):
 		printxyCoords = false;
 		break;
+  case -1:
+    break;
+  default:
+    printf("%d\n", key);
 	}
 }
 
