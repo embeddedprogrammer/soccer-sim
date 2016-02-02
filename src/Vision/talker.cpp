@@ -1,7 +1,7 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "std_msgs/Int32.h"
-#include "beginner_tutorials/Num.h"
+#include "walle/Num.h"
 #include "vision.h"
 #include <sstream>
 
@@ -20,7 +20,7 @@
 #define KEY_A 1179713
 #define KEY_1 1048625
 
-void feedbackCallback(const beginner_tutorials::Num::ConstPtr& msg)
+void feedbackCallback(const walle::Num::ConstPtr& msg)
 {
 	currentx = msg->x0;
 	currenty = msg->y0;
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 
 //	ros::Publisher chatter_pub = n.advertise<std_msgs::String>("chatter", 1000);
-	ros::Publisher chatter_pub = n.advertise<beginner_tutorials::Num>("chatter", 5);
+	ros::Publisher chatter_pub = n.advertise<walle::Num>("chatter", 5);
 	ros::Publisher commands_pub = n.advertise<std_msgs::Int32>("command", 5);
 	ros::Subscriber sub = n.subscribe("feedback", 10, feedbackCallback);
 
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 		visionCoords coords = vision_getCoordinates();
 //		cout << "time to excecute: " << getTimerTime_ms(0) << endl;
 	
-		beginner_tutorials::Num msg;
+		walle::Num msg;
 		msg.x0 = coords.robot1.x;
 		msg.y0 = coords.robot1.y;
 		msg.w0 = coords.robot1.w;

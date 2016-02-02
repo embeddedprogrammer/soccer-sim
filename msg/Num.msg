@@ -1,0 +1,16 @@
+float32 x0
+float32 y0
+float32 w0
+float32 x1
+float32 y1
+float32 w1
+float32 x2
+float32 y2
+float32 w2
+float32 x3
+float32 y3
+float32 w3
+float32 xb
+float32 yb
+float32 t
+float32 tsys

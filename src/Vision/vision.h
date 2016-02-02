@@ -112,9 +112,10 @@ void vision_init()
 	createImageWindow();
 
 //	system("curl -s http://192.168.1.90/mjpg/video.mjpg > imagefifo &");
+// our camera - http://192.168.1.10:8080/stream?topic=/image&dummy=param.mjpg
 
-	cap.open("http://192.168.1.90/mjpg/video.mjpg");
-
+//	cap.open("http://192.168.1.90/mjpg/video.mjpg");
+	cap.open("http://192.168.1.10:8080/stream?topic=/image&dummy=param.mjpg");
 
 	if ( !cap.isOpened() )
 	{
@@ -627,7 +628,6 @@ visionCoords vision_getCoordinates()
 		/*coord3 bodyCoord = motorControl_translateWorldCoordinatesToBodyCoordinates
 			((coord3){(robot1.x + lastRobot1.x) / 2, (robot1.y + lastRobot1.y) / 2, (robot1.w + lastRobot1.w) / 2},
 			(coord3){robot1.x - lastRobot1.x, robot1.y - lastRobot1.y, robot1.w - lastRobot1.w});
-
 		cout << "bodyCoord " <<
 			(bodyCoord.x) << " " <<
 			(bodyCoord.y) << " " <<
@@ -643,4 +643,3 @@ visionCoords vision_getCoordinates()
 
 	return (visionCoords){robot1, robot2, ball, 0, 0};;
 }
-

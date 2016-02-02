@@ -1,7 +1,7 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "std_msgs/Int32.h"
-#include "beginner_tutorials/Num.h"
+#include "walle/Num.h"
 #include "time.h"
 #include "stdio.h"
 
@@ -22,7 +22,7 @@ bool timeSet = false;
 /**
  * This tutorial demonstrates simple receipt of messages over the ROS system.
  */
-void chatterCallback(const beginner_tutorials::Num::ConstPtr& msg)
+void chatterCallback(const walle::Num::ConstPtr& msg)
 {
 	control_receiveCoords((coord3){msg->x0, msg->y0, msg->w0}, (coord3){msg->x1, msg->y1, msg->w1}, (coord2){msg->xb, msg->yb}, msg->tsys);
 	if(!timeSet)
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::Subscriber sub = n.subscribe("chatter", 10, chatterCallback);
 	ros::Subscriber sub2 = n.subscribe("command", 10, commandCallback);
-	ros::Publisher pub = n.advertise<beginner_tutorials::Num>("feedback", 5);
+	ros::Publisher pub = n.advertise<walle::Num>("feedback", 5);
 	ros::Rate loop_rate(TICKS_PER_SECOND);
 	int counter = 0;
 	while(ros::ok())
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 		counter++;
 		if(counter % 2 == 0)
 		{
-			beginner_tutorials::Num msg;
+			walle::Num msg;
 			msg.x0 = robot1currentPosition.x;
 			msg.y0 = robot1currentPosition.y;
 			msg.w0 = robot1currentPosition.w;
