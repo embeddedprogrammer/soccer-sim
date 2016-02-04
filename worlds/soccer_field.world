@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+  <world name="default">
+    <include>
+      <uri>model://camera</uri>
+      <pose>0 0 3 -1.5707 1.5707 0</pose>
+      <static>true</static>
+    </include>
+    <include>
+      <uri>model://field</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://soccer</uri>
+    </include>
+  </world>
+</sdf>

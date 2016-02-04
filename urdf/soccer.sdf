@@ -1,0 +1,134 @@
+<?xml version='1.0'?>
+<sdf version='1.4'>
+  <model name="my_robot">
+    <link name='chassis'>
+      <pose>0 0 .09 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <mesh><uri>model://soccer/meshes/soccer_robot.dae</uri></mesh>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh><uri>model://soccer/meshes/soccer_robot.dae</uri></mesh>
+        </geometry>
+        <material>
+          <ambient>0.2 0.2 0.2 1</ambient>
+          <diffuse>0.2 0.2 0.2 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+      <visual name='jersey1'>
+        <pose>-.03 0 .075 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>.04 .14 .01</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+      <visual name='jersey2'>
+        <pose>.03 0 .075 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>.02 .14 .01</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+
+    <link name="wheel1">
+      <pose>-.1 0 .03 0 1.5707 0</pose>
+      <collision name="collision">
+        <geometry>
+          <cylinder>
+            <radius>.03</radius>
+            <length>.01</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>.04 .04 .01</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="wheel2">
+      <pose>.05 -.0866 .03 0 1.5707 2.0943</pose>
+      <collision name="collision">
+        <geometry>
+          <cylinder>
+            <radius>.03</radius>
+            <length>.01</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>.04 .04 .01</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="wheel3">
+      <pose>.05 .0866 .03 0 1.5707 -2.0943</pose>
+      <collision name="collision">
+        <geometry>
+          <cylinder>
+            <radius>.03</radius>
+            <length>.01</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>.04 .04 .01</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+
+    <joint type="revolute" name="wheel1_hinge">
+      <child>wheel1</child>
+      <parent>chassis</parent>
+      <axis>
+        <xyz>-1 0 0</xyz>
+      </axis>
+    </joint>
+
+    <joint type="revolute" name="wheel2_hinge">
+      <child>wheel2</child>
+      <parent>chassis</parent>
+      <axis>
+        <xyz>.5 -.866 0</xyz>
+      </axis>
+    </joint>
+
+    <joint type="revolute" name="wheel3_hinge">
+      <child>wheel3</child>
+      <parent>chassis</parent>
+      <axis>
+        <xyz>.5 .866 0</xyz>
+      </axis>
+    </joint>
+  </model>
+</sdf>

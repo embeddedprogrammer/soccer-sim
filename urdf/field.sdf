@@ -1,0 +1,38 @@
+<?xml version='1.0'?>
+<sdf version='1.4'>
+  <model name="soccer_field">
+    <static>true</static>
+    <link name="link">
+      <pose>0 0 0 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <mesh><uri>model://field/meshes/field6.dae</uri></mesh>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>100</mu>
+              <mu2>50</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name="visual">
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+          <mesh><uri>model://field/meshes/field6.dae</uri></mesh>
+        </geometry>
+        <material>
+          <ambient>.3 .3 .3 1</ambient>
+          <diffuse>.6 .6 .6 1</diffuse>
+          <specular>0.01 0.01 0.01 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>
+
+
+
+

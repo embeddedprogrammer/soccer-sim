@@ -1,0 +1,28 @@
+<?xml version='1.0'?>
+<sdf version='1.4'>
+  <model name="ball">
+    <link name='chassis'>
+      <pose>0 0 .03 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <sphere>
+            <radius>.02</radius>
+          </sphere>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <sphere>
+            <radius>.02</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 .4 1</ambient>
+          <diffuse>1 1 .4 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>
