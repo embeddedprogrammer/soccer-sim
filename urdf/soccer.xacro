@@ -5,188 +5,26 @@
   <xacro:property name="wheel_mass" value=".01"/>
   <xacro:property name="wheel_radius" value=".03"/>
   <xacro:property name="wheel_thickness" value=".01"/>
+  <xacro:property name="height" value=".15"/>
+  <xacro:property name="mass" value=".5"/>
 
-  <link name='chassis'>
-    <pose>0 0 .09 0 0 0</pose>
+  <link name='chassis2'>
     <collision name="collision">
+      <origin xyz="0 0 ${height/2}" rpy="0 0 0"/>
       <geometry>
-        <mesh><uri>model://soccer/meshes/soccer_robot.dae</uri></mesh>
+        <mesh filename="package://walle/meshes/soccer_robot.dae"/>
       </geometry>
     </collision>
     <visual name="visual">
+      <origin xyz="0 0 ${height/2}" rpy="0 0 0"/>
       <geometry>
-        <mesh><uri>model://soccer/meshes/soccer_robot.dae</uri></mesh>
-      </geometry>
-      <material>
-        <ambient>0.2 0.2 0.2 1</ambient>
-        <diffuse>0.2 0.2 0.2 1</diffuse>
-        <specular>0.1 0.1 0.1 1</specular>
-        <emissive>0 0 0 0</emissive>
-      </material>
-    </visual>
-    <visual name='jersey1'>
-      <pose>-.03 0 .075 0 0 0</pose>
-      <geometry>
-        <box>
-          <size>.04 .14 .01</size>
-        </box>
-      </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-    </visual>
-    <visual name='jersey2'>
-      <pose>.03 0 .075 0 0 0</pose>
-      <geometry>
-        <box>
-          <size>.02 .14 .01</size>
-        </box>
-      </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-    </visual>
-  </link>
-
-  <link name="wheel1">
-    <pose>-.1 0 .03 0 1.5707 0</pose>
-    <collision name="collision">
-      <!--><origin xyz="0 0 ${height3/2 - axel_offset}" rpy="0 0 0"/><-->
-      <geometry>
-        <cylinder
-          radius="${wheel_radius}"
-          length="${wheel_thickness}"/>
-      </geometry>
-    </collision>
-    <visual name="visual">
-      <geometry>
-        <box size="${wheel_radius*.707} ${wheel_radius*.707} ${wheel_thickness}"/>
+        <mesh filename="package://walle/meshes/soccer_robot.dae"/>
       </geometry>
     </visual>
     <inertial>
-      <!--><origin xyz="0 0 ${height3/2 - axel_offset}" rpy="0 0 0"/><-->
+      <origin xyz="0 0 ${height/2}" rpy="0 0 0"/>
       <mass value="${mass}"/>
-      <inertia
-	      ixx="${wheel_mass/12 * (3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" ixy="0.0" ixz="0.0"
-	      iyy="${wheel_mass/12 * (3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" iyz="0.0"
-	      izz="${wheel_mass*wheel_radius*wheel_radius/2}"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
     </inertial>
   </link>
-
-  <link name="wheel2">
-    <pose>.05 -.0866 .03 0 1.5707 2.0943</pose>
-    <collision name="collision">
-      <!--><origin xyz="0 0 ${height3/2 - axel_offset}" rpy="0 0 0"/><-->
-      <geometry>
-        <cylinder
-          radius="${wheel_radius}"
-          length="${wheel_thickness}"/>
-      </geometry>
-    </collision>
-    <visual name="visual">
-      <geometry>
-        <box size="${wheel_radius*.707} ${wheel_radius*.707} ${wheel_thickness}"/>
-      </geometry>
-    </visual>
-    <inertial>
-      <!--><origin xyz="0 0 ${height3/2 - axel_offset}" rpy="0 0 0"/><-->
-      <mass value="${mass}"/>
-      <inertia
-	      ixx="${wheel_mass/12 * (3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" ixy="0.0" ixz="0.0"
-	      iyy="${wheel_mass/12 * (3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" iyz="0.0"
-	      izz="${wheel_mass*wheel_radius*wheel_radius/2}"/>
-    </inertial>
-  </link>
-
-  <link name="wheel3">
-    <pose>.05 .0866 .03 0 1.5707 -2.0943</pose>
-    <collision name="collision">
-      <!--><origin xyz="0 0 ${height3/2 - axel_offset}" rpy="0 0 0"/><-->
-      <geometry>
-        <cylinder
-          radius="${wheel_radius}"
-          length="${wheel_thickness}"/>
-      </geometry>
-    </collision>
-    <visual name="visual">
-      <geometry>
-        <box size="${wheel_radius*.707} ${wheel_radius*.707} ${wheel_thickness}"/>
-      </geometry>
-    </visual>
-    <inertial>
-      <!--><origin xyz="0 0 ${height3/2 - axel_offset}" rpy="0 0 0"/><-->
-      <mass value="${mass}"/>
-      <inertia
-	      ixx="${wheel_mass/12 * (3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" ixy="0.0" ixz="0.0"
-	      iyy="${wheel_mass/12 * (3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" iyz="0.0"
-	      izz="${wheel_mass*wheel_radius*wheel_radius/2}"/>
-    </inertial>
-  </link>
-
-  <joint type="revolute" name="joint1">
-    <child>wheel1</child>
-    <parent>chassis</parent>
-    <axis>
-      <xyz>-1 0 0</xyz>
-    </axis>
-    <dynamics damping="0.7"/>
-  </joint>
-
-  <joint type="revolute" name="joint2">
-    <child>wheel2</child>
-    <parent>chassis</parent>
-    <axis>
-      <xyz>.5 -.866 0</xyz>
-    </axis>
-    <dynamics damping="0.7"/>
-  </joint>
-
-  <joint type="revolute" name="joint3">
-    <child>wheel3</child>
-    <parent>chassis</parent>
-    <!--><origin xyz="0 ${width} ${height1 - axel_offset}" rpy="0 0 0"/></-->
-    <axis>
-      <xyz>.5 .866 0</xyz>
-    </axis>
-    <dynamics damping="0.7"/>
-  </joint>
-
-  <transmission name="tran1">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="joint1">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
-    </joint>
-    <actuator name="motor1">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-
-  <transmission name="tran2">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="joint2">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
-    </joint>
-    <actuator name="motor2">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-
-  <transmission name="tran3">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="joint3">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
-    </joint>
-    <actuator name="motor3">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
 </robot>
