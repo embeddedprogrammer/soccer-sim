@@ -36,31 +36,41 @@
     </inertial>
   </link>
 
-  <link name="wheel1">
-    <collision name="collision">
-      <origin xyz="${wheel1_position}" rpy="0 ${PI/2} 0"/>
-      <geometry>
-        <cylinder
-          radius="${wheel_radius}"
-          length="${wheel_thickness}"/>
-      </geometry>
-    </collision>
-    <visual name="visual">
-      <origin xyz="${wheel1_position}" rpy="0 ${PI/2} 0"/>
-      <geometry>
-        <box size="${wheel_radius*.707} ${wheel_radius*.707} ${wheel_thickness}"/>
-      </geometry>
-    </visual>
-    <inertial>
-      <origin xyz="${wheel1_position}" rpy="0 ${PI/2} 0"/>
-      <mass value="${mass}"/>
-      <inertia
-	      ixx="${wheel_mass/12 * (3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" ixy="0.0" ixz="0.0"
-	      iyy="${wheel_mass/12 * (3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" iyz="0.0"
-	      izz="${wheel_mass*wheel_radius*wheel_radius/2}"/>
-    </inertial>
-  </link>
+  <xacro:macro name="wheel" params="wheel1_position">
+    <xacro:property name="PI" value="3.1415926535897931"/>
+    <xacro:property name="wheel_mass" value=".01"/>
+    <xacro:property name="wheel_radius" value=".03"/>
+    <xacro:property name="wheel_thickness" value=".01"/>
+    <xacro:property name="wheel1_position" value="-.1 0 ${wheel_radius}"/>
 
+    <link name="wheel1">
+      <collision name="collision">
+        <origin xyz="${wheel1_position}" rpy="0 ${PI/2} 0"/>
+        <geometry>
+          <cylinder
+            radius="${wheel_radius}"
+            length="${wheel_thickness}"/>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <origin xyz="${wheel1_position}" rpy="0 ${PI/2} 0"/>
+        <geometry>
+          <box size="${wheel_radius*.707} ${wheel_radius*.707} ${wheel_thickness}"/>
+        </geometry>
+      </visual>
+      <inertial>
+        <origin xyz="${wheel1_position}" rpy="0 ${PI/2} 0"/>
+        <mass value="${mass}"/>
+        <inertia
+	        ixx="${wheel_mass/12 * (3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" ixy="0.0" ixz="0.0"
+	        iyy="${wheel_mass/12 * (3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" iyz="0.0"
+	        izz="${wheel_mass*wheel_radius*wheel_radius/2}"/>
+      </inertial>
+    </link>
+  </xacro:macro>
+
+  <xacro:wheel wheel1_position="-.2 0 .03"/>
+  
   <joint type="continuous" name="joint1">
     <parent link="chassis"/>
     <child link="wheel1"/>
