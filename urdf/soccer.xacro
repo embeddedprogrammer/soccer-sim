@@ -7,24 +7,77 @@
   <xacro:property name="wheel_thickness" value=".01"/>
   <xacro:property name="height" value=".15"/>
   <xacro:property name="mass" value=".5"/>
+  <xacro:property name="wheel1_dist" value=".2"/>
+  <xacro:property name="wheel1_position" value="-.1   0    ${wheel_radius}"/>
+  <xacro:property name="wheel2_position" value=".05 -.0866 ${wheel_radius}"/>
+  <xacro:property name="wheel3_position" value=".05  .0866 ${wheel_radius}"/>
 
-  <link name='chassis2'>
+  <!-- Import Rviz colors -->
+  <xacro:include filename="$(find walle)/urdf/materials.xacro"/>
+
+  <link name='chassis'>
     <collision name="collision">
-      <origin xyz="0 0 ${height/2}" rpy="0 0 0"/>
+      <origin xyz="0 0 ${height/2+wheel_radius}" rpy="0 0 0"/>
       <geometry>
         <mesh filename="package://walle/meshes/soccer_robot.dae"/>
       </geometry>
     </collision>
     <visual name="visual">
-      <origin xyz="0 0 ${height/2}" rpy="0 0 0"/>
+      <origin xyz="0 0 ${height/2+wheel_radius}" rpy="0 0 0"/>
       <geometry>
         <mesh filename="package://walle/meshes/soccer_robot.dae"/>
       </geometry>
     </visual>
+
     <inertial>
-      <origin xyz="0 0 ${height/2}" rpy="0 0 0"/>
+      <origin xyz="0 0 ${height/2+wheel_radius}" rpy="0 0 0"/>
       <mass value="${mass}"/>
       <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
     </inertial>
   </link>
+
+  <link name="wheel1">
+    <collision name="collision">
+      <origin xyz="${wheel1_position}" rpy="0 ${PI/2} 0"/>
+      <geometry>
+        <cylinder
+          radius="${wheel_radius}"
+          length="${wheel_thickness}"/>
+      </geometry>
+    </collision>
+    <visual name="visual">
+      <origin xyz="${wheel1_position}" rpy="0 ${PI/2} 0"/>
+      <geometry>
+        <box size="${wheel_radius*.707} ${wheel_radius*.707} ${wheel_thickness}"/>
+      </geometry>
+    </visual>
+    <inertial>
+      <origin xyz="${wheel1_position}" rpy="0 ${PI/2} 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	      ixx="${wheel_mass/12 * (3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" ixy="0.0" ixz="0.0"
+	      iyy="${wheel_mass/12 * (3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" iyz="0.0"
+	      izz="${wheel_mass*wheel_radius*wheel_radius/2}"/>
+    </inertial>
+  </link>
+
+  <joint type="continuous" name="joint1">
+    <parent link="chassis"/>
+    <child link="wheel1"/>
+    <axis>
+      <xyz>-1 0 0</xyz>
+    </axis>
+    <dynamics damping="0.7"/>
+  </joint>
+
+  <transmission name="tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
 </robot>
