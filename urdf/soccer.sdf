@@ -12,12 +12,7 @@
         <geometry>
           <mesh><uri>model://soccer/meshes/soccer_robot.dae</uri></mesh>
         </geometry>
-        <material>
-          <ambient>0.2 0.2 0.2 1</ambient>
-          <diffuse>0.2 0.2 0.2 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
+        <material name="grey">
       </visual>
       <visual name='jersey1'>
         <pose>-.03 0 .075 0 0 0</pose>
@@ -26,12 +21,7 @@
             <size>.04 .14 .01</size>
           </box>
         </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
+        <material name="red">
       </visual>
       <visual name='jersey2'>
         <pose>.03 0 .075 0 0 0</pose>
@@ -40,12 +30,7 @@
             <size>.02 .14 .01</size>
           </box>
         </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
+        <material name="red">
       </visual>
     </link>
 

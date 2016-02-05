@@ -12,8 +12,5 @@
     <include>
       <uri>model://sun</uri>
     </include>
-    <include>
-      <uri>model://soccer</uri>
-    </include>
   </world>
 </sdf>
