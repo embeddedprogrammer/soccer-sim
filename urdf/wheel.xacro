@@ -2,41 +2,10 @@
 <!-- Soccer Robot -->
 <robot name="soccer_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:property name="PI" value="3.1415926535897931"/>
-  <xacro:macro name="wheel" params="parent id mass radius thickness damping xy yaw axis">
-    <link name="base${id}">
-      <collision name="collision">
-        <origin xyz="${xy} 0" rpy="0 0 0"/>
-        <geometry>
-          <cylinder
-            radius="${radius}"
-            length="${thickness}"/>
-        </geometry>
-      </collision>
-      <visual>
-        <origin xyz="${xy} 0" rpy="0 0 0"/>
-        <geometry>
-          <cylinder
-            radius="${radius}"
-            length="${thickness}"/>
-        </geometry>
-      </visual>
-      <inertial>
-        <origin xyz="${xy} 0" rpy="0 0 0"/>
-        <mass value="${mass}"/>
-        <inertia
-          ixx="${mass/12 * (3*radius*radius + thickness*thickness)}" ixy="0.0" ixz="0.0"
-          iyy="${mass/12 * (3*radius*radius + thickness*thickness)}" iyz="0.0"
-          izz="${mass*radius*radius/2}"/>
-      </inertial>
-    </link>
-
-    <gazebo reference="base${id}">
-      <material>Gazebo/Red</material>
-    </gazebo>
+  <xacro:macro name="wheel" params="parent id mass radius thickness xy yaw axis">
 
     <link name="wheel${id}">
       <collision name="collision">
-        <origin xyz="${xy} ${radius}" rpy="0 ${PI/2} ${yaw}"/>
         <geometry>
           <cylinder
             radius="${radius}"
@@ -44,13 +13,11 @@
         </geometry>
       </collision>
       <visual name="visual">
-        <origin xyz="${xy} ${radius}" rpy="0 ${PI/2} ${yaw}"/>
         <geometry>
           <box size="${radius*.707} ${radius*.707} ${thickness}"/>
         </geometry>
       </visual>
       <inertial>
-        <origin xyz="${xy} ${radius}" rpy="0 ${PI/2} ${yaw}"/>
         <mass value="${mass}"/>
         <inertia
           ixx="${mass/12 * (3*radius*radius + thickness*thickness)}" ixy="0.0" ixz="0.0"
@@ -59,18 +26,44 @@
       </inertial>
     </link>
 
-    <joint type="continuous" name="base_joint${id}">
-      <origin xyz="-.2 0 .2" rpy="0 0 0"/>
-      <parent link="${parent}"/>
-      <child link="base${id}"/>
-    </joint>
+    <gazebo reference="wheel${id}">
+      <material>Gazebo/Red</material>
+    </gazebo>
+
+    <link name="spinner${id}">
+      <collision name="collision">
+        <geometry>
+          <cylinder
+            radius="${radius}"
+            length="${thickness}"/>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box size="${radius*.707} ${radius*.707} ${thickness}"/>
+        </geometry>
+      </visual>
+      <inertial>
+        <mass value="${mass}"/>
+        <inertia
+          ixx="${mass/12 * (3*radius*radius + thickness*thickness)}" ixy="0.0" ixz="0.0"
+          iyy="${mass/12 * (3*radius*radius + thickness*thickness)}" iyz="0.0"
+          izz="${mass*radius*radius/2}"/>
+      </inertial>
+    </link>    
 
     <joint type="continuous" name="joint${id}">
-      <origin xyz="-.2 0 .2" rpy="0 0 0"/>
-      <parent link="base${id}"/>
+      <origin xyz="${xy} ${radius}" rpy="0 ${PI/2} 0"/>
+      <parent link="${parent}"/>
       <child link="wheel${id}"/>
-      <axis xyz="1 0 0"/>
+      <axis xyz="0 0 1"/>
     </joint>
+
+    <joint type="fixed" name="spinnerjoint${id}">
+      <origin xyz="-.1 0 0" rpy="0 0 0"/>
+      <parent link="wheel${id}"/>
+      <child link="spinner${id}"/>
+    </joint>    
 
     <transmission name="tran${id}">
       <type>transmission_interface/SimpleTransmission</type>

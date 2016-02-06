@@ -38,5 +38,5 @@
 
   <xacro:include filename="$(find walle)/urdf/wheel.xacro"/>
   
-  <xacro:wheel parent="chassis" id="1" mass=".01" radius=".03" thickness=".01" damping="0.7" xy="-.2 0" yaw="0" axis="-1 0 0"/>
+  <xacro:wheel parent="chassis" id="1" mass=".01" radius=".03" thickness=".01" xy="-.2 0" yaw="${PI/2}" axis="-1 0 0"/>
 </robot>
