@@ -26,44 +26,12 @@
       </inertial>
     </link>
 
-    <gazebo reference="wheel${id}">
-      <material>Gazebo/Red</material>
-    </gazebo>
-
-    <link name="spinner${id}">
-      <collision name="collision">
-        <geometry>
-          <cylinder
-            radius="${radius}"
-            length="${thickness}"/>
-        </geometry>
-      </collision>
-      <visual name="visual">
-        <geometry>
-          <box size="${radius*.707} ${radius*.707} ${thickness}"/>
-        </geometry>
-      </visual>
-      <inertial>
-        <mass value="${mass}"/>
-        <inertia
-          ixx="${mass/12 * (3*radius*radius + thickness*thickness)}" ixy="0.0" ixz="0.0"
-          iyy="${mass/12 * (3*radius*radius + thickness*thickness)}" iyz="0.0"
-          izz="${mass*radius*radius/2}"/>
-      </inertial>
-    </link>    
-
     <joint type="continuous" name="joint${id}">
       <origin xyz="${xyz}" rpy="0 ${PI/2} ${yaw}"/>
       <parent link="${parent}"/>
       <child link="wheel${id}"/>
       <axis xyz="0 0 1"/>
     </joint>
-
-    <joint type="fixed" name="spinnerjoint${id}">
-      <origin xyz="-.1 0 0" rpy="0 0 0"/>
-      <parent link="wheel${id}"/>
-      <child link="spinner${id}"/>
-    </joint>    
 
     <transmission name="tran${id}">
       <type>transmission_interface/SimpleTransmission</type>
