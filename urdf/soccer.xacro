@@ -2,41 +2,38 @@
 <!-- Soccer Robot -->
 <robot name="soccer_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:property name="PI" value="3.1415926535897931"/>
-  <xacro:property name="mass" value=".01"/>
-  <xacro:property name="radius" value=".03"/>
-  <xacro:property name="thickness" value=".01"/>
+  <xacro:property name="SIN60" value="0.8660254038"/>
+  <xacro:property name="COS60" value="0.5"/>
   <xacro:property name="height" value=".15"/>
   <xacro:property name="mass" value=".5"/>
-  <xacro:property name="wheel1_dist" value=".2"/>
-  <xacro:property name="xyz" value="-.1   0    ${radius}"/>
-  <xacro:property name="wheel2_position" value=".05 -.0866 ${radius}"/>
-  <xacro:property name="wheel3_position" value=".05  .0866 ${radius}"/>
+  <xacro:property name="wheel_radius" value=".03"/>
+  <xacro:property name="wheel_dist" value=".1"/>
 
   <!-- Import Rviz colors -->
   <xacro:include filename="$(find walle)/urdf/materials.xacro"/>
 
   <link name='chassis'>
     <collision name="collision">
-      <origin xyz="0 0 ${height/2+radius}" rpy="0 0 0"/>
+      <origin xyz="0 0 ${height/2+wheel_radius}" rpy="0 0 0"/>
       <geometry>
         <mesh filename="package://walle/meshes/soccer_robot.dae"/>
       </geometry>
     </collision>
     <visual name="visual">
-      <origin xyz="0 0 ${height/2+radius}" rpy="0 0 0"/>
+      <origin xyz="0 0 ${height/2+wheel_radius}" rpy="0 0 0"/>
       <geometry>
         <mesh filename="package://walle/meshes/soccer_robot.dae"/>
       </geometry>
     </visual>
-
     <inertial>
-      <origin xyz="0 0 ${height/2+radius}" rpy="0 0 0"/>
+      <origin xyz="0 0 ${height/2+wheel_radius}" rpy="0 0 0"/>
       <mass value="${mass}"/>
       <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
     </inertial>
   </link>
 
   <xacro:include filename="$(find walle)/urdf/wheel.xacro"/>
-  
-  <xacro:wheel parent="chassis" id="1" mass=".01" radius=".03" thickness=".01" xy="-.2 0" yaw="${PI/2}" axis="-1 0 0"/>
+  <xacro:wheel parent="chassis" id="1" mass=".01" radius="${wheel_radius}" thickness=".01" xyz="${-wheel_dist}      0                    ${wheel_radius}" yaw="${PI}"/>
+  <xacro:wheel parent="chassis" id="2" mass=".01" radius="${wheel_radius}" thickness=".01" xyz="${wheel_dist*COS60} ${-wheel_dist*SIN60} ${wheel_radius}" yaw="${-PI/3}"/>
+  <xacro:wheel parent="chassis" id="3" mass=".01" radius="${wheel_radius}" thickness=".01" xyz="${wheel_dist*COS60} ${wheel_dist*SIN60}  ${wheel_radius}" yaw="${PI/3}"/>
 </robot>

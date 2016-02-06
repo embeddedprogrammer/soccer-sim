@@ -2,7 +2,7 @@
 <!-- Soccer Robot -->
 <robot name="soccer_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:property name="PI" value="3.1415926535897931"/>
-  <xacro:macro name="wheel" params="parent id mass radius thickness xy yaw axis">
+  <xacro:macro name="wheel" params="parent id mass radius thickness xyz yaw">
 
     <link name="wheel${id}">
       <collision name="collision">
@@ -53,7 +53,7 @@
     </link>    
 
     <joint type="continuous" name="joint${id}">
-      <origin xyz="${xy} ${radius}" rpy="0 ${PI/2} 0"/>
+      <origin xyz="${xyz}" rpy="0 ${PI/2} ${yaw}"/>
       <parent link="${parent}"/>
       <child link="wheel${id}"/>
       <axis xyz="0 0 1"/>
