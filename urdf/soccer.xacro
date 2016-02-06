@@ -7,7 +7,7 @@
   <xacro:property name="height" value=".15"/>
   <xacro:property name="mass" value=".5"/>
   <xacro:property name="wheel_radius" value=".03"/>
-  <xacro:property name="wheel_dist" value=".1"/>
+  <xacro:property name="wheel_dist" value=".095"/>
 
   <!-- Import Rviz colors -->
   <xacro:include filename="$(find walle)/urdf/materials.xacro"/>
@@ -31,9 +31,113 @@
       <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
     </inertial>
   </link>
+  <gazebo reference="chassis">
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+
+  <link name='jersey'>
+    <visual name="visual1">
+      <origin xyz="-.03 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size=".04 .14 .01"/>
+      </geometry>
+    </visual>
+    <visual name="visual2">
+      <origin xyz=".03 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size=".02 .14 .01"/>
+      </geometry>
+    </visual>
+  </link>
+  <gazebo reference="jersey">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+  <joint type="fixed" name="jersey_joint">
+    <origin xyz="0 0 ${height+wheel_radius}" rpy="0 0 0"/>
+    <parent link="chassis"/>
+    <child link="jersey"/>
+  </joint>
 
   <xacro:include filename="$(find walle)/urdf/wheel.xacro"/>
   <xacro:wheel parent="chassis" id="1" mass=".01" radius="${wheel_radius}" thickness=".01" xyz="${-wheel_dist}      0                    ${wheel_radius}" yaw="${PI}"/>
   <xacro:wheel parent="chassis" id="2" mass=".01" radius="${wheel_radius}" thickness=".01" xyz="${wheel_dist*COS60} ${-wheel_dist*SIN60} ${wheel_radius}" yaw="${-PI/3}"/>
   <xacro:wheel parent="chassis" id="3" mass=".01" radius="${wheel_radius}" thickness=".01" xyz="${wheel_dist*COS60} ${wheel_dist*SIN60}  ${wheel_radius}" yaw="${PI/3}"/>
+
+  <xacro:macro name="color_demo" params="color xyz">
+    <link name="link${color}">
+      <visual name="visual">
+        <geometry>
+          <box size=".02 .02 .02"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <gazebo reference="link${color}">
+      <material>Gazebo/${color}</material>
+    </gazebo>
+
+    <joint type="fixed" name="joint${color}">
+      <origin xyz="${xyz}" rpy="0 0 0"/>
+      <parent link="chassis"/>
+      <child link="link${color}"/>
+    </joint>
+
+  </xacro:macro>  
+  <xacro:color_demo color="White"             xyz="0.1 0.1 .1"/>
+  <xacro:color_demo color="Grey"              xyz="0.2 0.1 .1"/>
+  <xacro:color_demo color="Eyes"              xyz="0.2 0.1 .1"/>
+  <xacro:color_demo color="FlatBlack"         xyz="0.3 0.1 .1"/>
+  <xacro:color_demo color="Black"             xyz="0.4 0.1 .1"/>
+  <xacro:color_demo color="Red"               xyz="0.5 0.1 .1"/>
+  <xacro:color_demo color="Green"             xyz="0.6 0.1 .1"/>
+  <xacro:color_demo color="Yellow"            xyz="0.7 0.1 .1"/>
+  <xacro:color_demo color="Purple"            xyz="0.8 0.1 .1"/>
+  <xacro:color_demo color="Turquoise"         xyz="0.9 0.1 .1"/>
+  <xacro:color_demo color="WhiteEmissive"     xyz="0.0 0.2 .1"/>
+  <xacro:color_demo color="RedEmissive"       xyz="0.1 0.2 .1"/>
+  <xacro:color_demo color="GreenEmissive"     xyz="0.2 0.2 .1"/>
+  <xacro:color_demo color="PurpleEmissive"    xyz="0.3 0.2 .1"/>
+  <xacro:color_demo color="BlueLaser"         xyz="0.4 0.2 .1"/>
+  <xacro:color_demo color="BlueEmissive"      xyz="0.5 0.2 .1"/>
+  <xacro:color_demo color="JointAnchor"       xyz="0.6 0.2 .1"/>
+  <xacro:color_demo color="Blue"              xyz="0.7 0.2 .1"/>
+  <xacro:color_demo color="Skull"             xyz="0.8 0.2 .1"/>
+  <xacro:color_demo color="ExclamationPoint"  xyz="0.9 0.2 .1"/>
+  <xacro:color_demo color="QuestionMark"      xyz="0.0 0.3 .1"/>
+  <xacro:color_demo color="SmileyHappy"       xyz="0.1 0.3 .1"/>
+  <xacro:color_demo color="SmileySad"         xyz="0.2 0.3 .1"/>
+  <xacro:color_demo color="SmileyDead"        xyz="0.3 0.3 .1"/>
+  <xacro:color_demo color="SmileyPlain"       xyz="0.4 0.3 .1"/>
+  <xacro:color_demo color="WoodFloor"         xyz="0.5 0.3 .1"/>
+  <xacro:color_demo color="CeilingTiled"      xyz="0.6 0.3 .1"/>
+  <xacro:color_demo color="PaintedWall"       xyz="0.7 0.3 .1"/>
+  <xacro:color_demo color="PioneerBody"       xyz="0.8 0.3 .1"/>
+  <xacro:color_demo color="Pioneer2Body"      xyz="0.9 0.3 .1"/>
+  <xacro:color_demo color="Gold"              xyz="0.0 0.4 .1"/>
+  <xacro:color_demo color="CloudySky"         xyz="0.1 0.4 .1"/>
+  <xacro:color_demo color="RustySteel"        xyz="0.2 0.4 .1"/>
+  <xacro:color_demo color="Chrome"            xyz="0.3 0.4 .1"/>
+  <xacro:color_demo color="GrayGrid"          xyz="0.5 0.4 .1"/>
+  <xacro:color_demo color="Rocky"             xyz="0.6 0.4 .1"/>
+  <xacro:color_demo color="GrassFloor"        xyz="0.7 0.4 .1"/>
+  <xacro:color_demo color="Rockwall"          xyz="0.8 0.4 .1"/>
+  <xacro:color_demo color="RustyBarrel"       xyz="0.9 0.4 .1"/>
+  <xacro:color_demo color="WoodPallet"        xyz="0.0 0.5 .1"/>
+  <xacro:color_demo color="Fish"              xyz="0.1 0.5 .1"/>
+  <xacro:color_demo color="LightWood"         xyz="0.2 0.5 .1"/>
+  <xacro:color_demo color="WoodTile"          xyz="0.3 0.5 .1"/>
+  <xacro:color_demo color="Brick"             xyz="0.4 0.5 .1"/>
+  <xacro:color_demo color="RedTransparent"    xyz="0.5 0.5 .1"/>
+  <xacro:color_demo color="GreenTransparent"  xyz="0.6 0.5 .1"/>
+  <xacro:color_demo color="BlueTransparent"   xyz="0.7 0.5 .1"/>
+  <xacro:color_demo color="DepthMap"          xyz="0.8 0.5 .1"/>
+  <xacro:color_demo color="PCBGreen"          xyz="0.9 0.5 .1"/>
+  <xacro:color_demo color="Turret"            xyz="0.0 0.6 .1"/>
+  <xacro:color_demo color="EpuckBody"         xyz="0.1 0.6 .1"/>
+  <xacro:color_demo color="EpuckRing"         xyz="0.2 0.6 .1"/>
+  <xacro:color_demo color="EpuckPlate"        xyz="0.3 0.6 .1"/>
+  <xacro:color_demo color="EpuckLogo"         xyz="0.4 0.6 .1"/>
+  <xacro:color_demo color="EpuckMagenta"      xyz="0.5 0.6 .1"/>
+  <xacro:color_demo color="EpuckGold"         xyz="0.6 0.6 .1"/>
 </robot>
