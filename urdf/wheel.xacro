@@ -2,9 +2,9 @@
 <!-- Soccer Robot -->
 <robot name="soccer_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:property name="PI" value="3.1415926535897931"/>
-  <xacro:macro name="wheel" params="parent id mass radius thickness xyz yaw">
+  <xacro:macro name="wheel" params="namespace parent id mass radius thickness xyz yaw">
 
-    <link name="wheel${id}">
+    <link name="${namespace}/wheel${id}">
       <collision name="collision">
         <geometry>
           <cylinder
@@ -26,19 +26,19 @@
       </inertial>
     </link>
 
-    <joint type="continuous" name="joint${id}">
+    <joint type="continuous" name="${namespace}/joint${id}">
       <origin xyz="${xyz}" rpy="0 ${PI/2} ${yaw}"/>
-      <parent link="${parent}"/>
-      <child link="wheel${id}"/>
+      <parent link="${namespace}/${parent}"/>
+      <child link="${namespace}/wheel${id}"/>
       <axis xyz="0 0 1"/>
     </joint>
 
-    <transmission name="tran${id}">
+    <transmission name="${namespace}/tran${id}">
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="joint${id}">
+      <joint name="${namespace}/joint${id}">
         <hardwareInterface>EffortJointInterface</hardwareInterface>
       </joint>
-      <actuator name="motor${id}">
+      <actuator name="${namespace}/motor${id}">
         <hardwareInterface>EffortJointInterface</hardwareInterface>
         <mechanicalReduction>1</mechanicalReduction>
       </actuator>

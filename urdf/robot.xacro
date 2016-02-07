@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <!-- Soccer Robot -->
 <robot name="soccer_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:property name="namespace" value="$(arg robot_name)"/>
   <xacro:property name="PI" value="3.1415926535897931"/>
   <xacro:property name="SIN60" value="0.8660254038"/>
   <xacro:property name="COS60" value="0.5"/>
@@ -8,12 +9,12 @@
   <xacro:property name="mass" value=".5"/>
   <xacro:property name="wheel_radius" value=".03"/>
   <xacro:property name="wheel_dist" value=".095"/>
-  <xacro:property name="jersey_color" value="Red"/>
+  <xacro:property name="jersey_color" value="$(arg jersey_color)"/>
 
   <!-- Robot Base -->
-  <link name='chassis'>
-    <collision name="collision">
-      <origin xyz="0 0 ${-height/2+wheel_radius}" rpy="0 0 0"/>
+  <link name="${namespace}/chassis">
+    <collision name="${namespace}/collision">
+      <origin xyz="0 0 ${height/2+wheel_radius}" rpy="0 0 0"/>
       <geometry>
         <mesh filename="package://walle/meshes/soccer_robot.dae"/>
       </geometry>
@@ -30,12 +31,12 @@
       <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
     </inertial>
   </link>
-  <gazebo reference="chassis">
+  <gazebo reference="${namespace}/chassis">
     <material>Gazebo/DarkGrey</material>
   </gazebo>
 
   <!-- Jersey -->
-  <link name='jersey'>
+  <link name="${namespace}/jersey">
     <visual name="visual1">
       <origin xyz="-.03 0 0" rpy="0 0 0"/>
       <geometry>
@@ -49,18 +50,18 @@
       </geometry>
     </visual>
   </link>
-  <gazebo reference="jersey">
+  <gazebo reference="${namespace}/jersey">
     <material>Gazebo/${jersey_color}</material>
   </gazebo>
-  <joint type="fixed" name="jersey_joint">
+  <joint type="fixed" name="${namespace}/jersey_joint">
     <origin xyz="0 0 ${height+wheel_radius}" rpy="0 0 0"/>
-    <parent link="chassis"/>
-    <child link="jersey"/>
+    <parent link="${namespace}/chassis"/>
+    <child link="${namespace}/jersey"/>
   </joint>
 
   <!-- Wheels -->
   <xacro:include filename="$(find walle)/urdf/wheel.xacro"/>
-  <xacro:wheel parent="chassis" id="1" mass=".01" radius="${wheel_radius}" thickness=".01" xyz="${-wheel_dist}      0                    ${wheel_radius}" yaw="${PI}"/>
-  <xacro:wheel parent="chassis" id="2" mass=".01" radius="${wheel_radius}" thickness=".01" xyz="${wheel_dist*COS60} ${-wheel_dist*SIN60} ${wheel_radius}" yaw="${-PI/3}"/>
-  <xacro:wheel parent="chassis" id="3" mass=".01" radius="${wheel_radius}" thickness=".01" xyz="${wheel_dist*COS60} ${wheel_dist*SIN60}  ${wheel_radius}" yaw="${PI/3}"/>
+  <xacro:wheel namespace="${namespace}" parent="chassis" id="1" mass=".01" radius="${wheel_radius}" thickness=".01" xyz="${-wheel_dist}      0                    ${wheel_radius}" yaw="${PI}"/>
+  <xacro:wheel namespace="${namespace}" parent="chassis" id="2" mass=".01" radius="${wheel_radius}" thickness=".01" xyz="${wheel_dist*COS60} ${-wheel_dist*SIN60} ${wheel_radius}" yaw="${-PI/3}"/>
+  <xacro:wheel namespace="${namespace}" parent="chassis" id="3" mass=".01" radius="${wheel_radius}" thickness=".01" xyz="${wheel_dist*COS60} ${wheel_dist*SIN60}  ${wheel_radius}" yaw="${PI/3}"/>
 </robot>
