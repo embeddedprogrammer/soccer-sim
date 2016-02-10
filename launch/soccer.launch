@@ -1,14 +1,35 @@
+<?xml version="1.0"?>
 <launch>
-  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  <arg name="robot_name" default="robot"/>
+  <arg name="jersey_color" default="Red"/>
+  <arg name="x" default="0.0"/>
+  <arg name="y" default="0.0"/>
+  <arg name="z" default="0.0"/>
+
+  <!-- Soccer field world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find walle)/worlds/soccer_field.world"/>
-    <!-- more default parameters can be changed here -->
   </include>
 
-  <!-- Convert an xacro and put on parameter server -->
-  <param name="robot_description" command="$(find xacro)/xacro.py $(find walle)/urdf/soccer.xacro" />
+  <!-- Send the robot XML to param server -->
+  <param name="robot_description" command="
+    $(find xacro)/xacro.py 
+    $(find walle)/urdf/robot.xacro 
+    robot_name:=$(arg robot_name)
+    jersey_color:=$(arg jersey_color)"/>
 
-  <!-- Spawn a robot into Gazebo -->
-  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model soccer_robot" />
-
+  <!-- Push robot_description to factory and spawn robot in gazebo -->
+  <node name="spawn_$(arg robot_name)" pkg="gazebo_ros" type="spawn_model"
+   args="-param robot_description
+         -urdf
+         -x $(arg x)
+         -y $(arg y)
+         -z $(arg z)
+         -model $(arg robot_name)"
+   respawn="false" output="screen">
+  </node>
 </launch>
+
+
+
+

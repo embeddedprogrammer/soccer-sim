@@ -4,7 +4,7 @@
   <xacro:property name="PI" value="3.1415926535897931"/>
   <xacro:macro name="wheel" params="namespace parent id mass radius thickness xyz yaw">
 
-    <link name="${namespace}/wheel${id}">
+    <link name="wheel${id}">
       <collision name="collision">
         <geometry>
           <cylinder
@@ -26,19 +26,19 @@
       </inertial>
     </link>
 
-    <joint type="continuous" name="${namespace}/joint${id}">
+    <joint type="continuous" name="joint${id}">
       <origin xyz="${xyz}" rpy="0 ${PI/2} ${yaw}"/>
-      <parent link="${namespace}/${parent}"/>
-      <child link="${namespace}/wheel${id}"/>
+      <parent link="${parent}"/>
+      <child link="wheel${id}"/>
       <axis xyz="0 0 1"/>
     </joint>
 
-    <transmission name="${namespace}/tran${id}">
+    <transmission name="tran${id}">
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="${namespace}/joint${id}">
+      <joint name="joint${id}">
         <hardwareInterface>EffortJointInterface</hardwareInterface>
       </joint>
-      <actuator name="${namespace}/motor${id}">
+      <actuator name="motor${id}">
         <hardwareInterface>EffortJointInterface</hardwareInterface>
         <mechanicalReduction>1</mechanicalReduction>
       </actuator>
