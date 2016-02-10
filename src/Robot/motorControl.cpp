@@ -264,14 +264,22 @@ float lastWW = 0;
 void motorControl_driveMotorWithSignedSpeed(int wheelId, long qSpeed)
 {
 	std_msgs::Float64 msg;
-	msg.data = ((double)qSpeed) / pulsesPerRadian;
-	printf("Motor %d %ld\n", wheelId, qSpeed);
+	//printf("Motor %d %ld\n", wheelId, qSpeed);
 	if(wheelId == 0)
-		motor_pub1.publish(msg);
-	else if(wheelId == 1)
-		motor_pub2.publish(msg);
-	else if(wheelId == 2)
+	{
+		msg.data = -((double)qSpeed) / pulsesPerRadian;
 		motor_pub3.publish(msg);
+	}
+	else if(wheelId == 1)
+	{
+		msg.data = -((double)qSpeed) / pulsesPerRadian;
+		motor_pub2.publish(msg);
+	}
+	else if(wheelId == 2)
+	{
+		msg.data = -((double)qSpeed) / pulsesPerRadian;
+		motor_pub1.publish(msg);
+	}
 
 	// if(qSpeed == 0) //zero will let wheel spin freely, so we'll move it at a small amount.
 	// 	qSpeed = 1;

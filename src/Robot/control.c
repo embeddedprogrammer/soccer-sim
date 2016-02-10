@@ -246,29 +246,68 @@ void control_pressKey(int key)
 //			break;
 //		}
 //		skill_goToPoint(userControlledPoint);
+
+		//World Coordinate Control
 		motorControl_setOverride(false);
 		switch (key)
 		{
 		case KEY_LEFT:
+			printf("Left\n");
 			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { -40, 0, 0 });
 			break;
 		case KEY_UP:
+			printf("Up\n");
 			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 0, 40, 0 });
 			break;
 		case KEY_RIGHT:
+			printf("Right\n");
 			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 40, 0, 0 });
 			break;
 		case KEY_DOWN:
+			printf("Down\n");
 			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 0, -40, 0 }); //50
 			break;
 		case KEY_LEFT | MODIFIER_CTRL:
+			printf("CCW\n");
 			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 0, 0, 3 }); //2
 			break;
 		case KEY_RIGHT | MODIFIER_CTRL:
+			printf("CW\n");
 			motorControl_moveRobotWorldCoordinates(robot1currentPosition, (coord3) { 0, 0, -3 });
 			break;
 		}
 		motorControl_overrideForSpecifiedTime(750);
+
+		//Body coordinate control
+		// motorControl_setOverride(false);
+		// switch (key)
+		// {
+		// case KEY_LEFT:
+		// 	printf("Body Left\n");
+		// 	motorControl_moveRobotBodyCoordinates((coord3) { -40, 0, 0 });
+		// 	break;
+		// case KEY_UP:
+		// 	printf("Up\n");
+		// 	motorControl_moveRobotBodyCoordinates((coord3) { 0, 40, 0 });
+		// 	break;
+		// case KEY_RIGHT:
+		// 	printf("Right\n");
+		// 	motorControl_moveRobotBodyCoordinates((coord3) { 40, 0, 0 });
+		// 	break;
+		// case KEY_DOWN:
+		// 	printf("Down\n");
+		// 	motorControl_moveRobotBodyCoordinates((coord3) { 0, -40, 0 }); //50
+		// 	break;
+		// case KEY_LEFT | MODIFIER_CTRL:
+		// 	printf("CCW\n");
+		// 	motorControl_moveRobotBodyCoordinates((coord3) { 0, 0, 3 }); //2
+		// 	break;
+		// case KEY_RIGHT | MODIFIER_CTRL:
+		// 	printf("CW\n");
+		// 	motorControl_moveRobotBodyCoordinates((coord3) { 0, 0, -3 });
+		// 	break;
+		// }
+		// motorControl_overrideForSpecifiedTime(750);		
 	}
 //	printf("key press: %d\n", key);
 }
