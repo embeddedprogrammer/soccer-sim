@@ -9,21 +9,34 @@
 #include "motorControl.h"
 
 
-#define KEY_LEFT  1113937
-#define KEY_UP    1113938
-#define KEY_RIGHT 1113939
-#define KEY_DOWN  1113940
-#define KEY_ESC   1048603
 #define KEY_SPACE 1048608
 #define KEY_DEL 1114111
-#define KEY_a 1048673
-#define KEY_A 1179713
 #define KEY_1 1048625
 
+#define KEY_ESC 27
+#define KEY_ZERO 48
+#define KEY_a 97
+#define KEY_A 65
+#define KEY_LEFT 589649
+#define KEY_RIGHT 589651
+#define KEY_UP    65362
+#define KEY_DOWN  65364
+
+//#define KEY_LEFT  1113937
+//#define KEY_UP    1113938
+//#define KEY_RIGHT 1113939
+//#define KEY_DOWN  1113940
+//#define KEY_ESC 1048603
+//#define KEY_A 1179713
+//#define KEY_ZERO 1048624
+//#define KEY_a 1048673
+
+#define KEY_1 1048625
 #define KEY_ENTER 1048586
 #define MODIFIER_SHIFT (1 << 16)
 #define MODIFIER_CTRL (1 << 18)
 #define MODIFIER_ALT (1 << 19)
+
 #define MOVE_TIMER 2
 #define END_UPDATE_CAMERA_WAIT_TIMER 3
 #define CAMERA_WAIT_DIST 10 //pixels
@@ -201,10 +214,15 @@ void control_pressKey(int key)
 	case KEY_a + ('z' - 'a'):
 		calibrate_startMeasureLatency();
 		break;
+	default:
+		printf("Key %d\n", key);
+		break;
 	}
-	if ((key & (~MODIFIER_CTRL)) >= KEY_LEFT
-			&& (key & (~MODIFIER_CTRL)) <= KEY_DOWN)
+	int key_masked = (key & (~MODIFIER_CTRL));
+	if((key_masked == KEY_LEFT) || (key_masked == KEY_RIGHT) || (key_masked == KEY_UP) || (key_masked == KEY_DOWN))
 	{
+		printf("Arrow key!\n");
+
 //		coord3 userControlledPoint = robot1currentPosition;
 //		switch (key)
 //		{

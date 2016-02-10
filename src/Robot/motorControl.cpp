@@ -276,6 +276,7 @@ void motorControl_driveMotorWithSignedSpeed(int wheelId, long qSpeed)
 {
 	std_msgs::Float64 msg;
 	msg.data = ((double)qSpeed) / pulsesPerRadian;
+	printf("Motor %d %ld\n", wheelId, qSpeed);
 	if(wheelId == 0)
 		motor_pub1.publish(msg);
 	else if(wheelId == 1)
@@ -462,12 +463,12 @@ void motor3Callback(const std_msgs::Float64::ConstPtr& msg)
 void motorControl_init(ros::NodeHandle nh)
 {
 	motorControl_calcBodyFrameVectors();
-	motor_pub1 = nh.advertise<std_msgs::Float64>("m1v", 5);
-	motor_pub2 = nh.advertise<std_msgs::Float64>("m2v", 5);
-	motor_pub3 = nh.advertise<std_msgs::Float64>("m3v", 5);
-	motor_sub1 = nh.subscribe("m1feedback", 10, motor1Callback);
-	motor_sub2 = nh.subscribe("m2feedback", 10, motor2Callback);
-	motor_sub3 = nh.subscribe("m3feedback", 10, motor3Callback);
+	motor_pub1 = nh.advertise<std_msgs::Float64>("/zzbot/joint1_velocity_controller/command", 5);
+	motor_pub2 = nh.advertise<std_msgs::Float64>("/zzbot/joint2_velocity_controller/command", 5);
+	motor_pub3 = nh.advertise<std_msgs::Float64>("/zzbot/joint3_velocity_controller/command", 5);
+	// motor_sub1 = nh.subscribe("/zzbot/joint_states/position[0]", 10, motor1Callback);
+	// motor_sub2 = nh.subscribe("/zzbot/joint_states/position[1]", 10, motor2Callback);
+	// motor_sub3 = nh.subscribe("/zzbot/joint_states/position[2]", 10, motor3Callback);
 
 	//serial_fd = open("/dev/ttySAC0", O_RDWR);
 	// setMotorPidConstants(0, (pidq){250000, 130000, 400000, 83000});
