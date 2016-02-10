@@ -2,7 +2,7 @@
 <sdf version="1.4">
   <world name="default">
     <include>
-      <uri>model://camera</uri>
+      <uri>model://camera2</uri>
       <pose>0 0 3 -1.5707 1.5707 0</pose>
       <static>true</static>
     </include>

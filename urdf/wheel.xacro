@@ -39,13 +39,6 @@
   <!-- Base -->
   <xacro:macro name="wheel" params="namespace parent id mass radius thickness xyz yaw">
     <link name="wheel${id}">
-      <collision name="collision">
-        <geometry>
-          <cylinder
-            radius="${radius}"
-            length="${thickness}"/>
-        </geometry>
-      </collision>
       <visual name="visual">
         <geometry>
           <cylinder
