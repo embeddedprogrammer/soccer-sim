@@ -4,6 +4,9 @@
 #include "walle/Num.h"
 #include "vision.h"
 #include <sstream>
+#include <image_transport/image_transport.h>
+#include <opencv2/highgui/highgui.hpp>
+#include <cv_bridge/cv_bridge.h>
 
 /**
  * This tutorial demonstrates simple sending of messages over the ROS system.
@@ -42,29 +45,17 @@ double getTimerTime_ms(int timerId)
 	return (getTime_ms() - timerStartTime[timerId]);
 }
 
-int main(int argc, char **argv)
+ros::Publisher chatter_pub;
+ros::Publisher commands_pub;
+
+void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
-	ros::init(argc, argv, "talker");
-	vision_init();
-
-	ros::NodeHandle n;
-
-//	ros::Publisher chatter_pub = n.advertise<std_msgs::String>("chatter", 1000);
-	ros::Publisher chatter_pub = n.advertise<walle::Num>("chatter", 5);
-	ros::Publisher commands_pub = n.advertise<std_msgs::Int32>("command", 5);
-	ros::Subscriber sub = n.subscribe("feedback", 10, feedbackCallback);
-
-	int loopRate = 30;
-	
-	ros::Rate loop_rate(loopRate);
-	int waitTime = 1;// 000 / loopRate;
-	printf("%d", waitTime);
-
-	int count = 0;
-	while (ros::ok())
+	try
 	{
+		Mat frame = cv_bridge::toCvShare(msg, "bgr8")->image;
+
 		startTimer(0);
-		visionCoords coords = vision_getCoordinates();
+		visionCoords coords = vision_getCoordinates(frame);
 //		cout << "time to excecute: " << getTimerTime_ms(0) << endl;
 	
 		walle::Num msg;
@@ -86,7 +77,7 @@ int main(int argc, char **argv)
 		msg.tsys = getTime_s();
 		chatter_pub.publish(msg);
 		
-		int k = waitKey(waitTime);
+		int k = waitKey(30);
 		keyPress(k);
 		if(k != -1)
 		{
@@ -94,10 +85,30 @@ int main(int argc, char **argv)
 			msg2.data = k;
 			commands_pub.publish(msg2);
 		}
-		ros::spinOnce();
-		loop_rate.sleep();
-		++count;
 	}
+	catch (cv_bridge::Exception& e)
+	{
+		ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
+	}
+}
 
+int main(int argc, char **argv)
+{
+	vision_init();
+
+	ros::init(argc, argv, "talker");
+	ros::NodeHandle nh;
+	//cv::startWindowThread();
+
+	//Subscribe to topics
+	image_transport::ImageTransport it(nh);
+	image_transport::Subscriber image_sub = it.subscribe("/camera1/image_raw", 1, imageCallback);
+
+	chatter_pub = nh.advertise<walle::Num>("chatter", 5);
+	commands_pub = nh.advertise<std_msgs::Int32>("command", 5);
+	ros::Subscriber feedback_sub = nh.subscribe("feedback", 10, feedbackCallback);
+
+	ros::spin();
+	//cv::destroyWindow("view");
 	return 0;
 }

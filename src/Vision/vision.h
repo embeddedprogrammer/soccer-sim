@@ -37,22 +37,27 @@ int ballC[6];
 
 #define DEBUG_CYCLE_COUNT 100
 
-#define KEY_LEFT  1113937
-#define KEY_UP    1113938
-#define KEY_RIGHT 1113939
-#define KEY_DOWN  1113940
 #define KEY_SPACE 1048608
 #define KEY_DEL 1114111
 #define KEY_1 1048625
 
-//#define KEY_ESC 27
-//#define KEY_ZERO 48
-//#define KEY_a 97
-//#define KEY_A 65
-#define KEY_ESC 1048603
-#define KEY_A 1179713
-#define KEY_ZERO 1048624
-#define KEY_a 1048673
+#define KEY_ESC 27
+#define KEY_ZERO 48
+#define KEY_a 97
+#define KEY_A 65
+#define KEY_LEFT 589649
+#define KEY_RIGHT 589651
+#define KEY_UP    65362
+#define KEY_DOWN  65364
+
+//#define KEY_LEFT  1113937
+//#define KEY_UP    1113938
+//#define KEY_RIGHT 1113939
+//#define KEY_DOWN  1113940
+//#define KEY_ESC 1048603
+//#define KEY_A 1179713
+//#define KEY_ZERO 1048624
+//#define KEY_a 1048673
 
 #define KEY_1 1048625
 #define KEY_ENTER 1048586
@@ -71,7 +76,7 @@ bool erodeAndDilate = true;
 int imageShown = 0;
 int debugCount = 0;
 
-VideoCapture cap;
+//VideoCapture cap;
 
 typedef struct {float x, y;} coord2;
 typedef struct {float x, y, w;} coord3;
@@ -121,14 +126,14 @@ void vision_init()
 
 //	cap.open("http://192.168.1.90/mjpg/video.mjpg");
 //	cap.open("http://192.168.1.10:8080/stream?topic=/image&dummy=param.mjpg");
-  cap.open(0);
+	// cap.open(0);
 
-	if ( !cap.isOpened() )
-	{
-		cout << "Cannot open the web cam" << endl;
-	}
-	cap.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+	// if ( !cap.isOpened() )
+	// {
+	// 	cout << "Cannot open the web cam" << endl;
+	// }
+	// cap.set(CV_CAP_PROP_FRAME_WIDTH, 640);
+	// cap.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
 }
 
 void createTrackbar(int val[])
@@ -562,18 +567,18 @@ coord3 motorControl_translateWorldCoordinatesToBodyCoordinates(coord3 robot, coo
 
 coord3 lastRobot1;
 
-visionCoords vision_getCoordinates()
+visionCoords vision_getCoordinates(Mat frame)
 {
-	
+	imgOriginal = frame;
+
 	DEBUG_PRINT = (debugCount == 0);
 	debugCount = (debugCount + 1) % DEBUG_CYCLE_COUNT;
-	bool bSuccess = cap.read(imgOriginal); // read a new frame from video
 
-	if (!bSuccess) //if not success, break loop
-	{
-		cout << "Cannot read a frame from video stream" << endl;
-		return (visionCoords){(coord3){0, 0, 0}, (coord3){0, 0, 0}, (coord2){0, 0}, 0, 0};
-	}
+	// if (!bSuccess) //if not success, break loop
+	// {
+	// 	cout << "Cannot read a frame from video stream" << endl;
+	// 	return (visionCoords){(coord3){0, 0, 0}, (coord3){0, 0, 0}, (coord2){0, 0}, 0, 0};
+	// }
 
 //	Time timestamp = getNextImage(myFile, imageArray);
 //	imgOriginal = imdecode(imageArray,CV_LOAD_IMAGE_COLOR);
@@ -581,23 +586,23 @@ visionCoords vision_getCoordinates()
 	DEBUG_PRINT = (debugCount == 0);
 	debugCount = (debugCount + 1) % DEBUG_CYCLE_COUNT;
 
-//------------------------------------------UNDISTORT------------------------------
-	Mat camera_matrix = (Mat_<double>(3,3) << 5.1314846582801022e+02, 0., 3.1558730401691332e+02, 0.,
-	                      5.1394244582336182e+02, 2.6671553993693823e+02, 0., 0., 1.);
+// //------------------------------------------UNDISTORT------------------------------
+// 	Mat camera_matrix = (Mat_<double>(3,3) << 5.1314846582801022e+02, 0., 3.1558730401691332e+02, 0.,
+// 	                      5.1394244582336182e+02, 2.6671553993693823e+02, 0., 0., 1.);
 
-	Mat distortion_coeff = (Mat_<double>(1,5) << -3.6477907232256079e-01, 1.8476332607237927e-01,
-	                         3.9894289612051551e-03, -3.3921806480293636e-04,
-	                         -6.1411439476998939e-02);
+// 	Mat distortion_coeff = (Mat_<double>(1,5) << -3.6477907232256079e-01, 1.8476332607237927e-01,
+// 	                         3.9894289612051551e-03, -3.3921806480293636e-04,
+// 	                         -6.1411439476998939e-02);
 
-	Mat new_camera_matrix = (Mat_<double>(3,3) << 5.1314846582801022e+02, 0., 3.1558730401691332e+02 + 50, 0.,
-            				5.1394244582336182e+02, 2.6671553993693823e+02 + 25, 0., 0., 1.);
-	Mat map1, map2;
-	Mat R = (Mat_<double>(3,3) << 1,0,0,0,1,0,0,0,1);
-	Mat undistortedImg;
-	initUndistortRectifyMap(camera_matrix, distortion_coeff, R, new_camera_matrix, Size(750, 530), CV_32FC1, map1, map2);
+// 	Mat new_camera_matrix = (Mat_<double>(3,3) << 5.1314846582801022e+02, 0., 3.1558730401691332e+02 + 50, 0.,
+//             				5.1394244582336182e+02, 2.6671553993693823e+02 + 25, 0., 0., 1.);
+// 	Mat map1, map2;
+// 	Mat R = (Mat_<double>(3,3) << 1,0,0,0,1,0,0,0,1);
+// 	Mat undistortedImg;
+// 	initUndistortRectifyMap(camera_matrix, distortion_coeff, R, new_camera_matrix, Size(750, 530), CV_32FC1, map1, map2);
 
-	remap(imgOriginal, undistortedImg, map1, map2, INTER_LINEAR, BORDER_CONSTANT, 0);
-	imgOriginal = undistortedImg;
+// 	remap(imgOriginal, undistortedImg, map1, map2, INTER_LINEAR, BORDER_CONSTANT, 0);
+// 	imgOriginal = undistortedImg;
 
 //	Mat undistortedImg;
 //	undistort(imgOriginal, undistortedImg, camera_matrix, distortion_coeff);
@@ -609,9 +614,9 @@ visionCoords vision_getCoordinates()
 //	imgOriginal = imgOriginal(myROI);
 	cvtColor(imgOriginal, imgHSV, COLOR_BGR2HSV);
 
-	Mat playerI = thresholdImage(imgHSV, playerC, 5);
-	Mat opponentI = thresholdImage(imgHSV, opponentC, 5);
-	Mat ballI = thresholdImage(imgHSV, ballC, 3);
+	Mat playerI = thresholdImage(imgHSV, playerC, 2);
+	Mat opponentI = thresholdImage(imgHSV, opponentC, 2);
+	Mat ballI = thresholdImage(imgHSV, ballC, 2);
 
 	coord2 result = fieldToScreenCoords((coord2){currentx, currenty});
 	coord2 offset = fieldToScreenCoords((coord2){currentx + 5 * cos(currentw), currenty + 5 * sin(currentw)});
