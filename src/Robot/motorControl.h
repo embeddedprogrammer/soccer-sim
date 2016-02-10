@@ -44,26 +44,28 @@ bool DEBUG_PRINT;
 #define M_PI 3.1415926535
 #endif
 
-bool motorControl_roboErr();
+//bool motorControl_roboErr();
 
-void motorControl_resetRoboErr();
+//void motorControl_resetRoboErr();
 
 enum motorControl_statePredictionModes
 	{constantlyUpdate, manuallyUpdate, printMotorDiffs} motorControl_statePredictionMode;
 
-int motorControl_calcChecksum(char command[], int size);
+//int motorControl_calcChecksum(char command[], int size);
 
-int motorControl_calcChecksum2(char command[], int commandSize, char result[], int resultSize);
+//int motorControl_calcChecksum2(char command[], int commandSize, char result[], int resultSize);
 
-void motorControl_serial_sendMessage(char command[], int size);
+//void motorControl_serial_sendMessage(char command[], int size);
 
-int motorControl_serial_readMessage(char result[], int size);
+//int motorControl_serial_readMessage(char result[], int size);
 
-long motorControl_arrayToLong(char array[], int startPos);
+//long motorControl_arrayToLong(char array[], int startPos);
 
-void motorControl_longToArray(char array[], int startPos, long value);
+//void motorControl_longToArray(char array[], int startPos, long value);
 
 void motorControl_emptyBuffer();
+
+void motorControl_setQuadratureEncoderRegister(int wheelId, long val);
 
 long motorControl_readQuadratureEncoderRegister(int wheelId);
 
@@ -71,15 +73,15 @@ coord3 motorControl_readQuadraureEncoders();
 
 void motorControl_printQuadratureEncoderRegisters();
 
-void motorControl_resetQuadratureEncoderCounters(int roboclaw);
+//void motorControl_resetQuadratureEncoderCounters(int roboclaw);
 
 void motorControl_resetAllQuadratureEncoderCounters();
 
-long motorControl_readMotorSpeed(int wheelId);
+//long motorControl_readMotorSpeed(int wheelId);
 
-pidq motorControl_readMotorPidConstants(int wheelId);
+//pidq motorControl_readMotorPidConstants(int wheelId);
 
-void motorControl_setMotorPidConstants(int wheelId, pidq val);
+//void motorControl_setMotorPidConstants(int wheelId, pidq val);
 
 void motorControl_spinWheel(int wheelId, int power);
 
@@ -89,11 +91,11 @@ void motorControl_killMotors();
 
 void motorControl_driveMotorWithSignedSpeed(int wheelId, long qSpeed);
 
-void motorControl_printMotorSpeeds();
+//void motorControl_printMotorSpeeds();
 
-void motorControl_printPidConstants();
+//void motorControl_printPidConstants();
 
-void motorControl_showSpeedVsVelocityGraph(int wheelId);
+//void motorControl_showSpeedVsVelocityGraph(int wheelId);
 
 void motorControl_startCalibrate(coord2 velocity);
 
@@ -109,7 +111,7 @@ float motorControl_getBodyFrameVectorSpinFactor(coord2 wheelBase, coord2 wheelDi
 
 void motorControl_calcBodyFrameVectors();
 
-void motorControl_init();
+void motorControl_init(ros::NodeHandle nh);
 
 void motorControl_driveMotorsAtSpeed(float motor1Speed, float motor2Speed, float motor3Speed);
 

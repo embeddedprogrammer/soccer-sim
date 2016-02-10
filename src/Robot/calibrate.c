@@ -125,9 +125,9 @@ void calibrate_continueCalibrate()
 				long qpps1 = calibrate_motor1sum * 1000 / CALIBRATE_DRIVE_TIME * 128 / CALIBRATE_POWER / 4;
 				long qpps2 = calibrate_motor2sum * 1000 / CALIBRATE_DRIVE_TIME * 128 / CALIBRATE_POWER / 4;
 				printf("results: %ld %ld %ld\n", qpps0, qpps1, qpps2);
-				setMotorPidConstants(0, (pidq){250000, 130000, 400000, qpps0});
-				setMotorPidConstants(1, (pidq){250000, 130000, 400000, qpps1});
-				setMotorPidConstants(2, (pidq){250000, 130000, 400000, qpps2});
+				//setMotorPidConstants(0, (pidq){250000, 130000, 400000, qpps0});
+				//setMotorPidConstants(1, (pidq){250000, 130000, 400000, qpps1});
+				//setMotorPidConstants(2, (pidq){250000, 130000, 400000, qpps2});
 			}
 			else if(calibrate_state == cameraDistance)
 			{
@@ -361,7 +361,7 @@ void calibrate_startRoboclawErrCalibrate()
 	roboclawErrDir = 1;
 	roboclawErrJitterSpeed = 0;
 	calibrate_state = state_RoboclawErr;
-	motorControl_resetRoboErr();
+//	motorControl_resetRoboErr();
 	roboclawErrConstantSpeed += 5;
 //	printf("Calibrate roboclaw error with constant speed %f plus jitter and %d wait cycles\n", roboclawErrConstantSpeed, ROBO_CLAW_WAIT_CYCLE_TICKS);
 	printf("Calibrate roboclaw error with random speeds\n");
@@ -380,13 +380,13 @@ void calibrate_continueRoboclawErrCalibrate()
 	if(roboclawErrState == 0)
 	{
 		roboclawErrWaitCycles++;
-		if(motorControl_roboErr())
-		{
-			printf("Error in cmc. Jittering stopped at %f speed\n", roboclawErrJitterSpeed);
-			roboclawErrState = 1;
-			motorControl_killMotors();
-		}
-		else if(roboclawErrWaitCycles >= ROBO_CLAW_WAIT_CYCLE_TICKS)
+		// if(motorControl_roboErr())
+		// {
+		// 	printf("Error in cmc. Jittering stopped at %f speed\n", roboclawErrJitterSpeed);
+		// 	roboclawErrState = 1;
+		// 	motorControl_killMotors();
+		// }
+		if(roboclawErrWaitCycles >= ROBO_CLAW_WAIT_CYCLE_TICKS)
 		{
 			roboclawErrWaitCycles = 0;
 			if(DEBUG_PRINT)

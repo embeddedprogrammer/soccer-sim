@@ -141,9 +141,9 @@ void control_pressKey(int key)
 		//motorControl_printMotorSpeeds();
 		break;
 	case KEY_a + ('k' - 'a'):
-		setMotorPidConstants(0, (pidq){250000, 130000, 400000, 83000});
-		setMotorPidConstants(1, (pidq){250000, 130000, 400000, 86000});
-		setMotorPidConstants(2, (pidq){250000, 130000, 400000, 66000});
+		//setMotorPidConstants(0, (pidq){250000, 130000, 400000, 83000});
+		//setMotorPidConstants(1, (pidq){250000, 130000, 400000, 86000});
+		//setMotorPidConstants(2, (pidq){250000, 130000, 400000, 66000});
 //		calibrate_MMatrix(1);
 		//motorControl_printPidConstants();
 		break;
@@ -181,7 +181,7 @@ void control_pressKey(int key)
 		break;
 	case KEY_a + ('t' - 'a'):
 		printf("Reset encoders\n");
-		motorControl_resetQuadratureEncoderCounters(0);
+		motorControl_resetAllQuadratureEncoderCounters();
 		break;
 	case KEY_a + ('u' - 'a'):
 		printf("Encoder: %ld\n", motorControl_readQuadratureEncoderRegister(0));
@@ -190,7 +190,7 @@ void control_pressKey(int key)
 		calibrate_startSpeedCalibrate();
 		break;
 	case KEY_a + ('w' - 'a'):
-		motorControl_printPidConstants();
+		//motorControl_printPidConstants();
 		break;
 	case KEY_a + ('x' - 'a'):
 		calibrate_startCalibrate(cameraDistance);

@@ -40,9 +40,9 @@ void commandCallback(const std_msgs::Int32::ConstPtr& msg)
 
 int main(int argc, char **argv)
 {
-	motorControl_init();
 	ros::init(argc, argv, "listener");
 	ros::NodeHandle n;
+	motorControl_init(n);
 	ros::Subscriber sub = n.subscribe("chatter", 10, chatterCallback);
 	ros::Subscriber sub2 = n.subscribe("command", 10, commandCallback);
 	ros::Publisher pub = n.advertise<walle::Num>("feedback", 5);
