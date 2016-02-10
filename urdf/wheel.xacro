@@ -59,6 +59,7 @@
       <parent link="${parent}"/>
       <child link="wheel${id}"/>
       <axis xyz="0 0 1"/>
+      <limit effort="0.2" velocity="20.0" />
     </joint>
     <transmission name="tran${id}">
       <type>transmission_interface/SimpleTransmission</type>

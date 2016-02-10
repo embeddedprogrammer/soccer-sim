@@ -261,17 +261,6 @@ void motorControl_spinWheels(int power0, int power1, int power2)
 coord2 lastWV = (coord2){0, 0};
 float lastWW = 0;
 
-void motorControl_killMotors()
-{
-	printf("Kill!\n");
-// 	motorControl_spinWheel(0, 0);
-// 	motorControl_spinWheel(1, 0);
-// 	motorControl_spinWheel(2, 0);
-// 	currentBodyVelocity = (coord3){0, 0, 0};
-// 	lastWV = (coord2){0, 0};
-// 	lastWW = 0;
-}
-
 void motorControl_driveMotorWithSignedSpeed(int wheelId, long qSpeed)
 {
 	std_msgs::Float64 msg;
@@ -292,6 +281,20 @@ void motorControl_driveMotorWithSignedSpeed(int wheelId, long qSpeed)
 	// motorControl_longToArray(command, 2, qSpeed);
 	// command[6] = motorControl_calcChecksum(command, 6);
 	// motorControl_serial_sendMessage(command, 7);
+}
+
+void motorControl_killMotors()
+{
+	motorControl_driveMotorWithSignedSpeed(0, 0);
+	motorControl_driveMotorWithSignedSpeed(1, 0);
+	motorControl_driveMotorWithSignedSpeed(2, 0);
+	
+// 	motorControl_spinWheel(0, 0);
+// 	motorControl_spinWheel(1, 0);
+// 	motorControl_spinWheel(2, 0);
+// 	currentBodyVelocity = (coord3){0, 0, 0};
+// 	lastWV = (coord2){0, 0};
+// 	lastWW = 0;
 }
 
 // void motorControl_printMotorSpeeds()

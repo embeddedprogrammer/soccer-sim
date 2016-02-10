@@ -45,10 +45,13 @@ int ballC[6];
 #define KEY_ZERO 48
 #define KEY_a 97
 #define KEY_A 65
-#define KEY_LEFT 589649
-#define KEY_RIGHT 589651
+// #define KEY_LEFT 589649
+// #define KEY_RIGHT 589651
+#define KEY_LEFT 65361 
 #define KEY_UP    65362
+#define KEY_RIGHT 65363
 #define KEY_DOWN  65364
+
 
 //#define KEY_LEFT  1113937
 //#define KEY_UP    1113938
