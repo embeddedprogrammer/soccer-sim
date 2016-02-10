@@ -2,9 +2,38 @@
 <!-- Soccer Robot -->
 <robot name="soccer_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:property name="PI" value="3.1415926535897931"/>
-  <xacro:macro name="wheel" params="namespace parent id mass radius thickness xyz yaw">
 
-    <!-- Base -->
+  <!-- Omni joints -->
+  <xacro:macro name="omni" params="namespace parent id mass radius thickness xyz yaw">
+    <link name="omni_link${id}">
+      <collision name="collision">
+        <geometry>
+          <sphere radius="${radius}"/>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box size="${radius} ${radius} ${thickness}"/>
+        </geometry>
+      </visual>
+      <inertial>
+        <mass value="${mass}"/>
+        <inertia
+          ixx="${mass/12 * (3*radius*radius + thickness*thickness)}" ixy="0.0" ixz="0.0"
+          iyy="${mass/12 * (3*radius*radius + thickness*thickness)}" iyz="0.0"
+          izz="${mass*radius*radius/2}"/>
+      </inertial>
+    </link>
+    <joint type="fixed" name="omni_joint${id}">
+      <origin xyz="${xyz}" rpy="0 ${PI/2} ${yaw}"/>
+      <parent link="${parent}"/>
+      <child link="omni_link${id}"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- Base -->
+  <xacro:macro name="wheel" params="namespace parent id mass radius thickness xyz yaw">
     <link name="wheel${id}">
       <collision name="collision">
         <geometry>
@@ -44,31 +73,9 @@
     </transmission>
 
     <!-- Omni joints -->
-    <link name="wheel${id}_omni1">
-      <collision name="collision">
-        <geometry>
-          <sphere radius="${radius/6}"/>
-        </geometry>
-      </collision>
-      <visual name="visual">
-        <geometry>
-          <box size="${radius/6} ${radius/6} ${thickness/6}"/>
-        </geometry>
-      </visual>
-      <inertial>
-        <mass value="${mass}"/>
-        <inertia
-          ixx="${mass/12 * (3*radius*radius + thickness*thickness)}" ixy="0.0" ixz="0.0"
-          iyy="${mass/12 * (3*radius*radius + thickness*thickness)}" iyz="0.0"
-          izz="${mass*radius*radius/2}"/>
-      </inertial>
-    </link>
-    <joint type="fixed" name="joint${id}_omni1">
-      <origin xyz="${radius} 0 0" rpy="0 ${PI/2} ${PI/2}"/>
-      <parent link="wheel${id}"/>
-      <child link="wheel${id}_omni1"/>
-      <axis xyz="0 0 1"/>
-    </joint>
-
+    <xacro:omni namespace="${namespace}" parent="wheel${id}" id="${id}a" mass="${mass}" radius="${radius/6}" thickness="${thickness/6}" xyz="${radius}  0          0" yaw="${PI/2}"/>
+    <xacro:omni namespace="${namespace}" parent="wheel${id}" id="${id}b" mass="${mass}" radius="${radius/6}" thickness="${thickness/6}" xyz="0          ${radius}  0" yaw="0"/>
+    <xacro:omni namespace="${namespace}" parent="wheel${id}" id="${id}c" mass="${mass}" radius="${radius/6}" thickness="${thickness/6}" xyz="${-radius} 0          0" yaw="${PI/2}"/>
+    <xacro:omni namespace="${namespace}" parent="wheel${id}" id="${id}d" mass="${mass}" radius="${radius/6}" thickness="${thickness/6}" xyz="0          ${-radius} 0" yaw="0"/>
   </xacro:macro>
 </robot>
