@@ -24,8 +24,6 @@ Scalar green[]  = {Scalar(55,  128, 128), Scalar(65,  255, 255)};
 Scalar blue[]   = {Scalar(115, 128, 128), Scalar(125, 255, 255)};
 Scalar purple[] = {Scalar(145, 128, 128), Scalar(155, 255, 255)};
 
-Point2d centerOfField;
-
 void thresholdImage(Mat& imgHSV, Mat& imgGray, Scalar color[])
 {
 	inRange(imgHSV, color[0], color[1], imgGray);
@@ -51,6 +49,14 @@ bool compareMomentAreas(Moments moment1, Moments moment2)
 	return area1 < area2;
 }
 
+Point2d imageToWorldCoordinates(Point2d point_i, Size imageSize)
+{
+	Point2d centerOfField(imageSize.width / 2, imageSize.height / 2);
+	Point2d center_w = (point_i - centerOfField) * (1.0 / imageSize.width * FIELD_WIDTH);
+	center_w.y = -center_w.y;
+	return center_w;
+}
+
 void getRobotPose(Mat& imgHsv, Scalar color[], geometry_msgs::Pose2D& robotPose)
 {
 	Mat imgGray;
@@ -71,16 +77,15 @@ void getRobotPose(Mat& imgHsv, Scalar color[], geometry_msgs::Pose2D& robotPose)
 	Moments mmLarge = mm[mm.size() - 1];
 	Moments mmSmall = mm[mm.size() - 2];
 
-	Point2d centerLarge = getCenterOfMass(mmLarge);
-	Point2d centerSmall = getCenterOfMass(mmSmall);
+	Point2d centerLarge = imageToWorldCoordinates(getCenterOfMass(mmLarge), imgHsv.size());
+	Point2d centerSmall = imageToWorldCoordinates(getCenterOfMass(mmSmall), imgHsv.size());
 
-	Point2d robotCenter_i = (centerLarge + centerSmall) * (1.0 / 2);
-	Point2d robotCenter_w = (robotCenter_i - centerOfField) * (1.0 / imgHsv.size().width * FIELD_WIDTH);
+	Point2d robotCenter = (centerLarge + centerSmall) * (1.0 / 2);
 	Point2d diff = centerSmall - centerLarge;
 	double angle = atan2(diff.y, diff.x);
 
-	robotPose.x = robotCenter_w.x;
-	robotPose.y = robotCenter_w.y;
+	robotPose.x = robotCenter.x;
+	robotPose.y = robotCenter.y;
 	robotPose.theta = angle;
 }
 
@@ -97,11 +102,10 @@ void getBallPose(Mat& imgHsv, Scalar color[], geometry_msgs::Pose2D& ballPose)
 		return;
 
 	Moments mm = moments((Mat)contours[0]);
-	Point2d ballCenter_i = getCenterOfMass(mm);
-	Point2d ballCenter_w = (ballCenter_i - centerOfField) * (1.0 / imgHsv.size().width * FIELD_WIDTH);
+	Point2d ballCenter = imageToWorldCoordinates(getCenterOfMass(mm), imgHsv.size());
 
-	ballPose.x = ballCenter_w.x;
-	ballPose.y = ballCenter_w.y;
+	ballPose.x = ballCenter.x;
+	ballPose.y = ballCenter.y;
 	ballPose.theta = 0;
 }
 
