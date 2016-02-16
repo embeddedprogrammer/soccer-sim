@@ -38,6 +38,7 @@ Vector3d utility_saturateVelocity(Vector3d v)
 		v(1) = utility_sgn(v(1)) * ROBOT_MAX_VXY;
 	if(fabs(v(2)) > ROBOT_MAX_OMEGA)
 		v(2) = utility_sgn(v(2)) * ROBOT_MAX_OMEGA;
+	cout << "V:" << v << endl;
 	return v;
 }
 
@@ -71,19 +72,20 @@ Vector2d utility_toBallPose(Pose2D ball)
 void skill_followBallOnLine(RobotPose robot, Vector2d ball, double x_pos)
 {
 	// control x position to stay on current line
-	double vx = CONTROL_K_XY * (x_pos - robot.pos(1));
+	double vx = CONTROL_K_XY * (x_pos - robot.pos(0));
 
 	// control y position to match the ball's y-position
-	double vy = CONTROL_K_XY * (ball(2) - robot.pos(2));
+	double vy = CONTROL_K_XY * (ball(1) - robot.pos(1));
 
 	// control angle to face the goal
 	Vector2d dirGoal = goal - robot.pos;
-	double theta_d = atan2(dirGoal(2), dirGoal(1));
+	double theta_d = atan2(dirGoal(1), dirGoal(0));
 	double omega = -CONTROL_K_OMEGA * (robot.theta - theta_d); 
 	
 	// Output velocities to motors	
 	Vector3d v;
 	v << vx, vy, omega;
+	v = utility_saturateVelocity(v);
 	motorControl_moveRobotWorldVelocities(robot, v);
 }
 
@@ -96,12 +98,13 @@ void skill_goToPoint(RobotPose robot, Vector2d point)
 
 	// control angle to face the goal
 	Vector2d dirGoal = goal - robot.pos;
-	double theta_d = atan2(dirGoal(2), dirGoal(1));
+	double theta_d = atan2(dirGoal(1), dirGoal(0));
 	double omega = -CONTROL_K_OMEGA * (robot.theta - theta_d); 
 
 	// Output velocities to motors
 	Vector3d v;
 	v << vxy, omega;
+	v = utility_saturateVelocity(v);
 	motorControl_moveRobotWorldVelocities(robot, v);
 }
 
@@ -132,7 +135,7 @@ void visionCallback(const walle::SoccerPoses& msg)
 	play_rushGoal(utility_toRobotPose(msg.home1), utility_toBallPose(msg.ball));
  
 	// robot #2 stays on line, following the ball, facing the goal
-	skill_followBallOnLine(utility_toRobotPose(msg.home2), utility_toBallPose(msg.ball), -2 * FIELD_WIDTH / 3);
+	//skill_followBallOnLine(utility_toRobotPose(msg.home2), utility_toBallPose(msg.ball), -2 * FIELD_WIDTH / 3);
 }
 
 int main(int argc, char **argv)

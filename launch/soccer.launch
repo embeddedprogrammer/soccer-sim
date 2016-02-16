@@ -2,7 +2,7 @@
 <launch>
   <arg name="robot_name" default="robot"/>
   <arg name="ball_name" default="ball"/>
-  <arg name="jersey_color" default="Red"/>
+  <arg name="jersey_color" default="Blue"/>
 
   <arg name="x" default="-0.45"/>
   <arg name="y" default="0.0"/>
