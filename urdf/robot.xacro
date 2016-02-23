@@ -79,10 +79,8 @@
   <xacro:wheel namespace="${namespace}" parent="chassis" id="2" mass="${wheel_mass}" radius="${wheel_radius}" thickness=".01" xyz="${wheel_dist*COS60} ${-wheel_dist*SIN60} ${3*wheel_radius/2}" yaw="${-PI/3}"/>
   <xacro:wheel namespace="${namespace}" parent="chassis" id="3" mass="${wheel_mass}" radius="${wheel_radius}" thickness=".01" xyz="${wheel_dist*COS60} ${wheel_dist*SIN60}  ${3*wheel_radius/2}" yaw="${PI/3}"/>
 
-  <!-- Gazebo ROS control -->
+  <!-- Control -->
   <gazebo>
-    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-      <robotNamespace>/zzbot</robotNamespace>
-    </plugin>
+    <plugin name="model_push2" filename="libmodel_push2.so"/>
   </gazebo>
 </robot>
