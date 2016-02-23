@@ -36,12 +36,13 @@ namespace gazebo
     void OnUpdate(const common::UpdateInfo & /*_info*/)
     {
       // Apply a small linear velocity to the model.
-      this->model->SetLinearVel(math::Vector3(-.1, 0, 0));
+      this->model->SetLinearVel(math::Vector3(0, 0, command_msg));
     }
 
     void CommandCallback(const std_msgs::Float64 msg)
     {
       ROS_INFO("Hello World %f", msg.data);
+      command_msg = msg.data;
     }
 
   private: 
@@ -50,6 +51,7 @@ namespace gazebo
     event::ConnectionPtr updateConnection;
     ros::NodeHandle node_handle;
     ros::Subscriber command_sub;
+    double command_msg;
   };
 
   // Register this plugin with the simulator
