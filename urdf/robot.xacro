@@ -68,16 +68,16 @@
     <material>Gazebo/${jersey_color}</material>
   </gazebo>
   <joint type="fixed" name="jersey_joint">
-    <origin xyz="0 0 ${height+wheel_radius}" rpy="0 0 0"/>
+    <origin xyz="0 0 ${height+wheel_radius/2}" rpy="0 0 0"/>
     <parent link="chassis"/>
     <child link="jersey"/>
   </joint>
 
   <!-- Wheels -->
   <xacro:include filename="$(find walle)/urdf/wheel.xacro"/>
-  <xacro:wheel namespace="${namespace}" parent="chassis" id="1" mass="${wheel_mass}" radius="${wheel_radius}" thickness=".01" xyz="${-wheel_dist}      0                    ${3*wheel_radius/2}" yaw="${PI}"/>
-  <xacro:wheel namespace="${namespace}" parent="chassis" id="2" mass="${wheel_mass}" radius="${wheel_radius}" thickness=".01" xyz="${wheel_dist*COS60} ${-wheel_dist*SIN60} ${3*wheel_radius/2}" yaw="${-PI/3}"/>
-  <xacro:wheel namespace="${namespace}" parent="chassis" id="3" mass="${wheel_mass}" radius="${wheel_radius}" thickness=".01" xyz="${wheel_dist*COS60} ${wheel_dist*SIN60}  ${3*wheel_radius/2}" yaw="${PI/3}"/>
+  <xacro:wheel namespace="${namespace}" parent="chassis" id="1" mass="${wheel_mass}" radius="${wheel_radius}" thickness=".01" xyz="${-wheel_dist}      0                    ${wheel_radius}" yaw="${PI}"/>
+  <xacro:wheel namespace="${namespace}" parent="chassis" id="2" mass="${wheel_mass}" radius="${wheel_radius}" thickness=".01" xyz="${wheel_dist*COS60} ${-wheel_dist*SIN60} ${wheel_radius}" yaw="${-PI/3}"/>
+  <xacro:wheel namespace="${namespace}" parent="chassis" id="3" mass="${wheel_mass}" radius="${wheel_radius}" thickness=".01" xyz="${wheel_dist*COS60} ${wheel_dist*SIN60}  ${wheel_radius}" yaw="${PI/3}"/>
 
   <!-- Control -->
   <gazebo>
