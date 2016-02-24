@@ -44,11 +44,6 @@
             radius="${radius}"
             length="${thickness}"/>
         </geometry>
-        <surface>
-          <friction>
-            <ode mu="0" mu2="0" slip1="1" slip2="1"/>
-          </friction>
-        </surface>
       </collision>      
       <inertial>
         <mass value="${mass}"/>
@@ -58,23 +53,17 @@
           izz="${mass*radius*radius/2}"/>
       </inertial>
     </link>
-    <joint type="continuous" name="joint${id}">
+    <gazebo reference="wheel${id}">
+      <mu1>0.0</mu1>
+      <mu2>0.0</mu2>
+    </gazebo>
+    <joint type="fixed" name="joint${id}">
       <origin xyz="${xyz}" rpy="0 ${PI/2} ${yaw}"/>
       <parent link="${parent}"/>
       <child link="wheel${id}"/>
       <axis xyz="0 0 1"/>
       <limit effort="0.2" velocity="20.0" />
     </joint>
-    <transmission name="tran${id}">
-      <type>transmission_interface/SimpleTransmission</type>
-      <joint name="joint${id}">
-        <hardwareInterface>EffortJointInterface</hardwareInterface>
-      </joint>
-      <actuator name="motor${id}">
-        <hardwareInterface>EffortJointInterface</hardwareInterface>
-        <mechanicalReduction>1</mechanicalReduction>
-      </actuator>
-    </transmission>
 
     <!-- Omni joints -->
     <xacro:omni namespace="${namespace}" parent="wheel${id}" id="${id}a" mass="${mass/10}" radius="${radius/4}" thickness="${radius/6}" color="White"    xyz="${radius*.8}        0                   0" yaw="${PI/2}"/>

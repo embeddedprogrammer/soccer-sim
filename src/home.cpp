@@ -193,7 +193,7 @@ void visionCallback(const walle::SoccerPoses& msg)
 	play_rushGoal(player1, ball, 1);
 
 	// robot #2 stays on line, following the ball, facing the goal
-	skill_followBallOnLine(player2, ball, -2 * FIELD_WIDTH / 3, 2);
+	skill_followBallOnLine(player2, ball, -2 * FIELD_WIDTH / 6, 2);
 }
 
 int main(int argc, char **argv)

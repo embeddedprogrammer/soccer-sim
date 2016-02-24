@@ -83,6 +83,10 @@
   <gazebo>
     <plugin name="model_push2" filename="libmodel_push2.so">
       <namespace>${namespace}</namespace>
+      <kP_xy>20</kP_xy>
+      <kP_w>2</kP_w>
+      <maxF_xy>10</maxF_xy>
+      <maxF_w>1</maxF_w>
     </plugin>
   </gazebo>
 </robot>
