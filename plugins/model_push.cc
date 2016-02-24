@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "ros/ros.h"
 #include "std_msgs/Float64.h"
+#include "geometry_msgs/Vector3.h"
 
 namespace gazebo
 {
@@ -36,13 +37,13 @@ namespace gazebo
     void OnUpdate(const common::UpdateInfo & /*_info*/)
     {
       // Apply a small linear velocity to the model.
-      this->model->SetLinearVel(math::Vector3(0, 0, command_msg));
+		this->model->SetLinearVel(math::Vector3(command_msg.x, command_msg.y, 0));
+		this->model->SetAngularVel(math::Vector3(0, 0, command_msg.z));
     }
 
-    void CommandCallback(const std_msgs::Float64 msg)
+	 void CommandCallback(const geometry_msgs::Vector3 msg)
     {
-      ROS_INFO("Hello World %f", msg.data);
-      command_msg = msg.data;
+		command_msg = msg;
     }
 
   private: 
@@ -51,7 +52,7 @@ namespace gazebo
     event::ConnectionPtr updateConnection;
     ros::NodeHandle node_handle;
     ros::Subscriber command_sub;
-    double command_msg;
+	 geometry_msgs::Vector3 command_msg;
   };
 
   // Register this plugin with the simulator
