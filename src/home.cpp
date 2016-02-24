@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 	param_init();
 	ros::init(argc, argv, "home");
 	ros::NodeHandle nh;
-	motorControl_init(nh);
+	motorControl_init(nh, "robot");
 	ros::Subscriber sub = nh.subscribe("/vision", 1, visionCallback);
 
 	ros::spin();

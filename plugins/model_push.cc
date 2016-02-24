@@ -4,7 +4,6 @@
 #include <gazebo/common/common.hh>
 #include <stdio.h>
 #include "ros/ros.h"
-#include "std_msgs/Float64.h"
 #include "geometry_msgs/Vector3.h"
 
 namespace gazebo

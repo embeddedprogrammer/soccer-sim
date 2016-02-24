@@ -26,7 +26,7 @@ void motorControl_killMotors();
 
 void motorControl_calcBodyFrameVectors();
 
-void motorControl_init(ros::NodeHandle nh);
+void motorControl_init(ros::NodeHandle nh, string robotName);
 
 void motorControl_driveMotorsAtSpeed(Vector3d motorVelocities);
 
