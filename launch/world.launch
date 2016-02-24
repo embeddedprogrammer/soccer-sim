@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- The world argument defaults to the empty world -->
+  <arg name="world" default="$(find walle)/worlds/empty_world.xacro" />
+
+  <!-- Extra arguments for gazebo, for example "-g" for no GUI, "-r" for no rendering -->
+  <arg name="args" default="" />
+
+  <!-- Setting this to true in the parameter server tells everyone to use simulated time -->
+  <param name="/use_sim_time" value="true" />
+
+  <!-- Upload world description filtered through xacro -->
+  <param name="world_description" command="$(find xacro)/xacro.py '$(arg world)'" />
+
+  <!--
+    Start a gazebo node with given arguments and world file.  Note that the node name must be
+    gazebo if the spawn_model script from the gazebo package is used.
+  -->
+  <node
+    name="gazebo"
+    pkg="gazebo"
+    type="gazebo"
+    args="$(arg args) -w world_description"
+    respawn="false"
+    output="screen"
+  />
+
+</launch>
