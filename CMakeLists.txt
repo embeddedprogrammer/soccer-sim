@@ -26,7 +26,7 @@ add_executable(vision src/vision.cpp)
 find_package( OpenCV REQUIRED )
 target_link_libraries(vision ${OpenCV_LIBS} ${catkin_LIBRARIES})
 
-add_executable(home src/home.cpp src/motorControl.cpp)
+add_executable(home src/home.cpp)
 target_link_libraries(home ${catkin_LIBRARIES})
 
 # Add plugins

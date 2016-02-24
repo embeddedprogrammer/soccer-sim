@@ -1,12 +1,15 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Pose2D.h"
+#include "geometry_msgs/Vector3.h"
+#include "std_msgs/Float64.h"
 #include "walle/SoccerPoses.h"
 #include "walle/Num.h"
 #include "stdio.h"
-#include "motorControl.h"
+#include <eigen3/Eigen/Eigen>
 
 using namespace std;
 using namespace geometry_msgs;
+using namespace Eigen;
 
 #define ROBOT_MAX_VXY .5
 #define ROBOT_MAX_OMEGA 2*M_PI
@@ -17,6 +20,27 @@ using namespace geometry_msgs;
 #define ROBOT_RADIUS 0.10
 
 Vector2d goal;
+ros::Publisher motor_pub1;
+ros::Publisher motor_pub2;
+ros::Subscriber vision_sub;
+
+struct RobotPose
+{
+	Vector2d pos;
+	double theta;
+};
+
+void moveRobot(Vector3d v_world, int robotId)
+{
+	geometry_msgs::Vector3 v;
+	v.x = v_world(0);
+	v.y = v_world(1);
+	v.z = v_world(2);
+	if(robotId == 1)
+		motor_pub1.publish(v);
+	else if(robotId == 2)
+		motor_pub2.publish(v);
+}
 
 void param_init()
 {
@@ -38,7 +62,6 @@ Vector3d utility_saturateVelocity(Vector3d v)
 		v(1) = utility_sgn(v(1)) * ROBOT_MAX_VXY;
 	if(fabs(v(2)) > ROBOT_MAX_OMEGA)
 		v(2) = utility_sgn(v(2)) * ROBOT_MAX_OMEGA;
-	cout << "V:" << v << endl;
 	return v;
 }
 
@@ -69,7 +92,7 @@ Vector2d utility_toBallPose(Pose2D ball)
 // skill - follow ball on line
 //   Follows the y-position of the ball, while maintaining x-position at x_pos. 
 //   Angle always faces the goal.
-void skill_followBallOnLine(RobotPose robot, Vector2d ball, double x_pos)
+void skill_followBallOnLine(RobotPose robot, Vector2d ball, double x_pos, int robotId)
 {
 	// control x position to stay on current line
 	double vx = CONTROL_K_XY * (x_pos - robot.pos(0));
@@ -86,12 +109,12 @@ void skill_followBallOnLine(RobotPose robot, Vector2d ball, double x_pos)
 	Vector3d v;
 	v << vx, vy, omega;
 	v = utility_saturateVelocity(v);
-	motorControl_moveRobotWorldVelocities(robot, v);
+	moveRobot(v, robotId);
 }
 
 // skill - go to point
 //   Travels towards a point. Angle always faces the goal.
-void skill_goToPoint(RobotPose robot, Vector2d point)
+void skill_goToPoint(RobotPose robot, Vector2d point, int robotId)
 {
 	Vector2d dirPoint = point - robot.pos;
 	Vector2d vxy = dirPoint * CONTROL_K_XY;
@@ -105,7 +128,7 @@ void skill_goToPoint(RobotPose robot, Vector2d point)
 	Vector3d v;
 	v << vxy, omega;
 	v = utility_saturateVelocity(v);
-	motorControl_moveRobotWorldVelocities(robot, v);
+	moveRobot(v, robotId);
 }
 
 // play - rush goal
@@ -115,7 +138,7 @@ void skill_goToPoint(RobotPose robot, Vector2d point)
 // commands.  Skills are built on control commands.  A strategy would employ
 // plays at a lower level.  For example, switching between offense and
 // defense would be a strategy.
-void play_rushGoal(RobotPose robot, Vector2d ball)
+void play_rushGoal(RobotPose robot, Vector2d ball, int robotId)
 {
 	// normal vector from ball to goal
 	Vector2d n = utility_unitVector(goal - ball);
@@ -124,18 +147,18 @@ void play_rushGoal(RobotPose robot, Vector2d ball)
 	Vector2d position = ball - 0.2*n;
 
 	if(utility_vecLength(position - robot.pos) < .21)
-		skill_goToPoint(robot, goal);
+		skill_goToPoint(robot, goal, robotId);
 	else
-		skill_goToPoint(robot, position);
+		skill_goToPoint(robot, position, robotId);
 }
 
 void visionCallback(const walle::SoccerPoses& msg)
 {
 	// robot #1 positions itself behind ball and rushes the goal.
-	play_rushGoal(utility_toRobotPose(msg.home1), utility_toBallPose(msg.ball));
+	play_rushGoal(utility_toRobotPose(msg.home1), utility_toBallPose(msg.ball), 1);
  
 	// robot #2 stays on line, following the ball, facing the goal
-	//skill_followBallOnLine(utility_toRobotPose(msg.home2), utility_toBallPose(msg.ball), -2 * FIELD_WIDTH / 3);
+	skill_followBallOnLine(utility_toRobotPose(msg.home2), utility_toBallPose(msg.ball), -2 * FIELD_WIDTH / 3, 2);
 }
 
 int main(int argc, char **argv)
@@ -143,11 +166,15 @@ int main(int argc, char **argv)
 	param_init();
 	ros::init(argc, argv, "home");
 	ros::NodeHandle nh;
-	motorControl_init(nh, "robot");
-	ros::Subscriber sub = nh.subscribe("/vision", 1, visionCallback);
+	vision_sub = nh.subscribe("/vision", 1, visionCallback);
+	motor_pub1 = nh.advertise<geometry_msgs::Vector3>("/home1/command", 5);
+	motor_pub2 = nh.advertise<geometry_msgs::Vector3>("/home2/command", 5);
 
 	ros::spin();
-	motorControl_killMotors();
+	Vector3d zeroVel;
+	zeroVel << 0, 0, 0;
+	moveRobot(zeroVel, 1);
+	moveRobot(zeroVel, 2);
 	return 0;
 }
 

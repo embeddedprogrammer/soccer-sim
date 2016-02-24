@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "ros/ros.h"
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Eigen>
 #include "std_msgs/Float64.h"
 #include "geometry_msgs/Vector3.h"
 

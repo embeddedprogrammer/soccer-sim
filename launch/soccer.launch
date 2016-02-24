@@ -1,51 +1,35 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="robot_name" default="robot"/>
-  <arg name="ball_name" default="ball"/>
-  <arg name="jersey_color" default="Blue"/>
-
-  <arg name="x" default="-0.45"/>
-  <arg name="y" default="0.0"/>
-  <arg name="z" default="0.0"/>
-
   <!-- Soccer field world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find walle)/worlds/soccer_field.world"/>
   </include>
 
-  <!-- Send the robot XML to param server -->
-  <param name="robot_description" command="
-    $(find xacro)/xacro.py 
-    $(find walle)/urdf/robot.xacro 
-    robot_name:=$(arg robot_name)
-    jersey_color:=$(arg jersey_color)"/>
+  <!-- Soccer robots -->
+  <include file="$(find walle)/launch/robot.launch">
+    <arg name="robot_name" default="home1"/>
+    <arg name="jersey_color" default="Blue"/>
+    <arg name="x" default="-0.5"/>
+  </include>
+  <include file="$(find walle)/launch/robot.launch">
+    <arg name="robot_name" default="home2"/>
+    <arg name="jersey_color" default="Green"/>
+    <arg name="x" default="-1.0"/>
+  </include>
+  <include file="$(find walle)/launch/robot.launch">
+    <arg name="robot_name" default="away1"/>
+    <arg name="jersey_color" default="Red"/>
+    <arg name="x" default="0.5"/>
+  </include>
+  <include file="$(find walle)/launch/robot.launch">
+    <arg name="robot_name" default="away2"/>
+    <arg name="jersey_color" default="Purple"/>
+    <arg name="x" default="1.0"/>
+  </include>
 
-  <!-- Push robot_description to factory and spawn robot in gazebo -->
-  <node name="spawn_$(arg robot_name)" pkg="gazebo_ros" type="spawn_model"
-   args="-param robot_description
-         -urdf
-         -x $(arg x)
-         -y $(arg y)
-         -z $(arg z)
-         -model $(arg robot_name)"
-   respawn="false" output="screen">
-  </node>
-
-  <!-- Send the ball XML to param server -->
-  <param name="ball_description" command="
-    $(find xacro)/xacro.py 
-    $(find walle)/urdf/ball.xacro"/>
-
-  <!-- Push ball_description to factory and spawn ball in gazebo -->
-  <node name="spawn_$(arg ball_name)" pkg="gazebo_ros" type="spawn_model"
-   args="-param ball_description
-         -urdf
-         -x 0
-         -y 0
-         -z 0
-         -model $(arg ball_name)"
-   respawn="false" output="screen">
-  </node>
+  <!-- Soccer ball -->  
+  <include file="$(find walle)/launch/ball.launch">
+  </include>
 </launch>
 
 

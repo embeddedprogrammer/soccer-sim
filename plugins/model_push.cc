@@ -23,7 +23,7 @@ namespace gazebo
 			else
 				gzerr << "[model_push] Please specify a namespace.\n";
 			node_handle = ros::NodeHandle(robot_name);
-			gzmsg << "Subscribing to " << ("/" + robot_name + "/command") << "\n";
+			gzmsg << "[model_push] Subscribing to " << ("/" + robot_name + "/command") << "\n";
 			command_sub = node_handle.subscribe("/" + robot_name + "/command", 1, &ModelPush::CommandCallback, this);
 
 			// Listen to the update event. This event is broadcast every
