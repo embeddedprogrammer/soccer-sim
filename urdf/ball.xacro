@@ -31,4 +31,11 @@
   <gazebo reference="ball">
     <material>Gazebo/Yellow</material>
   </gazebo>
+
+  <!-- Control -->
+  <gazebo>
+    <plugin name="soccer_ball" filename="libsoccer_ball.so">
+      <namespace>ball</namespace>
+    </plugin>
+  </gazebo>  
 </robot>
