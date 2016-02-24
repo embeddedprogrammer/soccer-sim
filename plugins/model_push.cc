@@ -34,9 +34,12 @@ namespace gazebo
 		// Called by the world update start event
 		void OnUpdate(const common::UpdateInfo & /*_info*/)
 		{
-			// Apply the commanded linear and angular velocities to the model.
-			this->model->SetLinearVel(math::Vector3(command_msg.x, command_msg.y, 0));
-			this->model->SetAngularVel(math::Vector3(0, 0, command_msg.z));
+			if(this->model->GetWorldPose().pos.z < .01) //If robot is more than 1 cm off the ground, it is probably going over obstacles and that's bad.
+			{
+				// Apply the commanded linear and angular velocities to the model.
+				this->model->SetLinearVel(math::Vector3(command_msg.x, command_msg.y, 0));
+				this->model->SetAngularVel(math::Vector3(0, 0, command_msg.z));
+			}
 		}
 
 		void CommandCallback(const geometry_msgs::Vector3 msg)
