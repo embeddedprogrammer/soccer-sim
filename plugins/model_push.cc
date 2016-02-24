@@ -12,21 +12,20 @@ namespace gazebo
 	class ModelPush : public ModelPlugin
 	{
 	public: 
-		void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
+		void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 		{
-			// Store the pointer to the model
-			this->model = _parent;
+			// Store the pointers to the model and to the sdf
+			model = _parent;
+			sdf_pointer = _sdf;
 
-			/*
-			 * Connect the Plugin to the Robot and Save pointers to the various elements in the simulation
-			 */
-//			if (_sdf->HasElement("namespace"))
-//				namespace_ = _sdf->GetElement("namespace")->Get<std::string>();
-//			else
-//				gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a namespace.\n";
-//			node_handle_ = new ros::NodeHandle(namespace_);
-			node_handle = ros::NodeHandle("robot");
-			command_sub = node_handle.subscribe("/command", 1, &ModelPush::CommandCallback, this);
+			// Connect to ROS
+			if (sdf_pointer->HasElement("namespace"))
+				robot_name = sdf_pointer->GetElement("namespace")->Get<std::string>();
+			else
+				gzerr << "[model_push] Please specify a namespace.\n";
+			node_handle = ros::NodeHandle(robot_name);
+			gzmsg << "Subscribing to " << ("/" + robot_name + "/command") << "\n";
+			command_sub = node_handle.subscribe("/" + robot_name + "/command", 1, &ModelPush::CommandCallback, this);
 
 			// Listen to the update event. This event is broadcast every
 			// simulation iteration.
@@ -48,6 +47,8 @@ namespace gazebo
 
 	private:
 		// Pointer to the model
+		sdf::ElementPtr sdf_pointer;
+		std::string robot_name;
 		physics::ModelPtr model;
 		event::ConnectionPtr updateConnection;
 		ros::NodeHandle node_handle;
