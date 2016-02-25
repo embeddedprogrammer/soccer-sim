@@ -6,7 +6,7 @@
       <pose>0 0 0 0 0 0</pose>
       <collision name="collision">
         <geometry>
-          <mesh><uri>model://field/meshes/field6.dae</uri></mesh>
+          <mesh><uri>model://field/meshes/field9_collision.dae</uri></mesh>
         </geometry>
         <surface>
           <friction>
@@ -18,9 +18,8 @@
         </surface>
       </collision>
       <visual name="visual">
-        <cast_shadows>false</cast_shadows>
         <geometry>
-          <mesh><uri>model://field/meshes/field6.dae</uri></mesh>
+          <mesh><uri>model://field/meshes/field9_visual.dae</uri></mesh>
         </geometry>
         <material>
           <ambient>.3 .3 .3 1</ambient>
