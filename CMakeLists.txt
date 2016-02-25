@@ -29,9 +29,6 @@ target_link_libraries(vision ${OpenCV_LIBS} ${catkin_LIBRARIES})
 add_executable(home src/home.cpp)
 target_link_libraries(home ${catkin_LIBRARIES})
 
-add_executable(away src/away.cpp)
-target_link_libraries(away ${catkin_LIBRARIES})
-
 # Add plugins
 add_library(model_push2 plugins/model_push.cc)
 target_link_libraries(model_push2 ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
