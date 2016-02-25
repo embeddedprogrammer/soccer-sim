@@ -8,7 +8,7 @@
 
 namespace gazebo
 {
-	class ModelPush : public ModelPlugin
+	class SoccerDrive : public ModelPlugin
 	{
 	public:
 		void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
@@ -30,11 +30,11 @@ namespace gazebo
 
 			node_handle = ros::NodeHandle(robot_name);
 			gzmsg << "[model_push] Subscribing to " << ("/" + robot_name + "/command") << "\n";
-			command_sub = node_handle.subscribe("/" + robot_name + "/command", 1, &ModelPush::CommandCallback, this);
+			command_sub = node_handle.subscribe("/" + robot_name + "/command", 1, &SoccerDrive::CommandCallback, this);
 
 			// Listen to the update event. This event is broadcast every
 			// simulation iteration.
-			updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&ModelPush::OnUpdate, this, _1));
+			updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&SoccerDrive::OnUpdate, this, _1));
 		}
 
 		double getValueFromSdf(std::string name)
@@ -56,7 +56,7 @@ namespace gazebo
 		double saturate(double F, double Fmax)
 		{
 			if(fabs(F) > Fmax)
-				return Fmax*ModelPush::sgn(F);
+				return Fmax*SoccerDrive::sgn(F);
 			else
 				return F;
 		}
@@ -70,9 +70,9 @@ namespace gazebo
 				math::Vector3 linearVel = link->GetWorldLinearVel();
 				math::Vector3 angularVel = link->GetWorldAngularVel();
 
-				double fx = ModelPush::saturate((command_msg.x - linearVel.x)*kP_xy, maxF_xy);
-				double fy = ModelPush::saturate((command_msg.y - linearVel.y)*kP_xy, maxF_xy);
-				double fw = ModelPush::saturate((command_msg.z - angularVel.z)*kP_w, maxF_w);
+				double fx = SoccerDrive::saturate((command_msg.x - linearVel.x)*kP_xy, maxF_xy);
+				double fy = SoccerDrive::saturate((command_msg.y - linearVel.y)*kP_xy, maxF_xy);
+				double fw = SoccerDrive::saturate((command_msg.z - angularVel.z)*kP_w, maxF_w);
 
 				link->AddForce(math::Vector3(fx, fy, 0));
 				link->AddTorque(math::Vector3(0, 0, fw));
@@ -101,5 +101,5 @@ namespace gazebo
 	};
 
 	// Register this plugin with the simulator
-	GZ_REGISTER_MODEL_PLUGIN(ModelPush)
+	GZ_REGISTER_MODEL_PLUGIN(SoccerDrive)
 }

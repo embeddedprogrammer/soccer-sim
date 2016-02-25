@@ -30,8 +30,8 @@ add_executable(home src/home.cpp)
 target_link_libraries(home ${catkin_LIBRARIES})
 
 # Add plugins
-add_library(model_push2 plugins/model_push.cc)
-target_link_libraries(model_push2 ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_library(soccer_drive plugins/soccer_drive.cpp)
+target_link_libraries(soccer_drive ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_library(soccer_ball plugins/soccer_ball.cpp)
 target_link_libraries(soccer_ball ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
