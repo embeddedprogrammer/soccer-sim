@@ -33,9 +33,9 @@
   <!-- Vision -->
   <node name="vision" pkg="walle" type="vision"/>
 
-  <!-- Home and away team controllers 
+  <!-- Home and away team controllers -->
   <node name="home" pkg="walle" type="home" args="_team:=home"/>
-  <node name="away" pkg="walle" type="home" args="_team:=away"/>-->
+  <node name="away" pkg="walle" type="home" args="_team:=away"/>
 
   <!-- Soccer ball -->
   <include file="$(find walle)/launch/ball.launch">
