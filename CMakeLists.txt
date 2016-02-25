@@ -26,8 +26,8 @@ add_executable(vision src/vision.cpp)
 find_package( OpenCV REQUIRED )
 target_link_libraries(vision ${OpenCV_LIBS} ${catkin_LIBRARIES})
 
-add_executable(home src/home.cpp)
-target_link_libraries(home ${catkin_LIBRARIES})
+add_executable(controller src/controller.cpp)
+target_link_libraries(controller ${catkin_LIBRARIES})
 
 # Add plugins
 add_library(soccer_drive plugins/soccer_drive.cpp)
