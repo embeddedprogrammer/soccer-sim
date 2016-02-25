@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(walle)
 
 # Find catkin and any catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp gazebo_ros rospy std_msgs geometry_msgs message_generation cv_bridge genmsg image_transport sensor_msgs)
+find_package(catkin REQUIRED COMPONENTS roscpp gazebo_ros rospy std_msgs geometry_msgs message_generation cv_bridge genmsg image_transport sensor_msgs xacro)
 
 # Depend on system install of Gazebo
 find_package(gazebo REQUIRED)
@@ -29,6 +29,31 @@ target_link_libraries(vision ${OpenCV_LIBS} ${catkin_LIBRARIES})
 add_executable(home src/home.cpp)
 target_link_libraries(home ${catkin_LIBRARIES})
 
+add_executable(away src/away.cpp)
+target_link_libraries(away ${catkin_LIBRARIES})
+
 # Add plugins
 add_library(model_push2 plugins/model_push.cc)
 target_link_libraries(model_push2 ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
+add_library(soccer_ball plugins/soccer_ball.cpp)
+target_link_libraries(soccer_ball ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
+# Generate .world files from .world.xacro files
+
+# Xacro files
+file(GLOB xacro_files ${CMAKE_CURRENT_SOURCE_DIR}/worlds/*.world.xacro)
+
+foreach(it ${xacro_files})
+  # remove .xacro extension
+  string(REGEX MATCH "(.*)[.]xacro$" unused ${it})
+  set(output_filename ${CMAKE_MATCH_1})
+
+  # create a rule to generate ${output_filename} from {it}
+  xacro_add_xacro_file(${it} ${output_filename})
+
+  list(APPEND world_files ${output_filename})
+endforeach(it)
+
+# add an abstract target to actually trigger the builds
+add_custom_target(media_files ALL DEPENDS ${world_files})
