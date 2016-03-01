@@ -19,12 +19,18 @@ namespace gazebo
 			// Store the pointers to the model and to the sdf
 			model = _parent;
 			sdf_pointer = _sdf;
+			link = model->GetLink("ball");
 
 			// Connect to ROS
 			if (sdf_pointer->HasElement("namespace"))
 				ball_name = sdf_pointer->GetElement("namespace")->Get<std::string>();
 			else
 				gzerr << "[Soccer ball plugin] Please specify a namespace.\n";
+
+			if (sdf_pointer->HasElement("friction"))
+				friction = sdf_pointer->GetElement("friction")->Get<double>();
+			else
+				gzerr << "[Soccer ball plugin] Please specify friction.\n";
 
 			gzmsg << "[Soccer ball plugin] Subscribing to " << ("/" + ball_name + "/command") << "\n";
 			node_handle = ros::NodeHandle(ball_name);
@@ -51,6 +57,10 @@ namespace gazebo
 		// Called by the world update start event
 		void OnUpdate(const common::UpdateInfo & /*_info*/)
 		{
+			math::Vector3 linearVel = link->GetWorldLinearVel();
+			math::Vector3 force = -linearVel*friction;
+			link->AddForce(force);
+
 			if(newMessage)
 			{
 				model->SetWorldPose(math::Pose(command_msg.x, command_msg.y, command_msg.z, 0, 0, 0));
@@ -66,6 +76,7 @@ namespace gazebo
 				scoreHome++;
 				SoccerBall::resetBallAndPublishScore();
 			}
+
 		}
 
 		void CommandCallback(const geometry_msgs::Vector3 msg)
@@ -77,6 +88,8 @@ namespace gazebo
 	private:
 		// Pointer to the model
 		sdf::ElementPtr sdf_pointer;
+		double friction;
+		physics::LinkPtr link;
 		std::string ball_name;
 		physics::ModelPtr model;
 		event::ConnectionPtr updateConnection;
