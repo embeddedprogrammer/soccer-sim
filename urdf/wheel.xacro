@@ -9,7 +9,7 @@
   <!-- Omni joints -->
   <xacro:macro name="omni" params="namespace parent id mass radius thickness xyz yaw color">
     <link name="omni_link${id}">
-      <visual name="visual">
+      <visual>
         <geometry>
           <cylinder
             radius="${radius}"
@@ -31,7 +31,7 @@
   <!-- Base -->
   <xacro:macro name="wheel" params="namespace parent id mass radius thickness xyz yaw">
     <link name="wheel${id}">
-      <visual name="visual">
+      <visual>
         <geometry>
           <cylinder
             radius="${radius*.9}"

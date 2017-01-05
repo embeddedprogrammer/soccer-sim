@@ -31,7 +31,7 @@
         <mesh filename="package://soccersim/meshes/soccer_robot.dae"/>
       </geometry>
     </collision>
-    <visual name="visual">
+    <visual>
       <origin xyz="0 0 ${height/2+wheel_radius/4}" rpy="0 0 0"/>
       <geometry>
         <mesh filename="package://soccersim/meshes/soccer_robot.dae"/>
@@ -63,7 +63,7 @@
         <box size="${kicker_thickness} ${kicker_width} ${kicker_height}" />
       </geometry>
     </collision>
-    <visual name="visual">
+    <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <box size="${kicker_thickness} ${kicker_width} ${kicker_height}" />
@@ -91,13 +91,13 @@
 
   <!-- Jersey -->
   <link name="jersey">
-    <visual name="visual1">
+    <visual>
       <origin xyz="-.03 0 0" rpy="0 0 0"/>
       <geometry>
         <box size=".04 .14 .01"/>
       </geometry>
     </visual>
-    <visual name="visual2">
+    <visual>
       <origin xyz=".03 0 0" rpy="0 0 0"/>
       <geometry>
         <box size=".02 .14 .01"/>

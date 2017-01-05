@@ -13,7 +13,7 @@
         <sphere radius="${radius}"/>
       </geometry>
     </collision>
-    <visual name="visual">
+    <visual>
       <origin xyz="0 0 ${radius}" rpy="0 0 0"/>
       <geometry>
         <sphere radius="${radius}"/>
