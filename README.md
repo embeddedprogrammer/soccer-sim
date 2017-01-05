@@ -3,6 +3,8 @@ Soccer Simulator
 
 Based off of the work from Jacob White, TA. (See [walle repo](https://github.com/embeddedprogrammer/soccer/tree/gazebo)).
 
+**See it in action in the Chicken McThuggets [code](https://github.com/zamora18/robot-soccer/tree/develop/ros/src/soccersim)!**
+
 We added the ability to use our ROS package with the Gazebo physics simulator, without having to move any code. We simply create a `roslaunch` file that remaps topics between our code and the simulator so that the correct items are being sent.
 
 We also added the ability to click on the vision screen and place the ball, or click and drag to drag the ball wherever we needed to.
