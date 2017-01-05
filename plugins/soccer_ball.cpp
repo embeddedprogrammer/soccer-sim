@@ -6,8 +6,11 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Vector3.h"
 
-#define FIELD_WIDTH 3.048  // in meters
-#define FIELD_HEIGHT 1.524
+#define FIELD_WIDTH 		3.40  // in meters
+#define FIELD_HEIGHT 		2.38
+
+// the ball goes back to home after this threshold
+#define GOAL_THRESHOLD		(FIELD_WIDTH/2 + 0.05)
 
 namespace gazebo
 {
@@ -65,13 +68,17 @@ namespace gazebo
 			{
 				model->SetWorldPose(math::Pose(command_msg.x, command_msg.y, command_msg.z, 0, 0, 0));
 				newMessage = false;
+
+				// Clear the velocity when the user places the ball
+				link->SetLinearVel(math::Vector3(0, 0, 0));
+				link->SetForce(math::Vector3(0, 0, 0));
 			}
-			else if (model->GetWorldPose().pos.x < -FIELD_WIDTH/2)
+			else if (model->GetWorldPose().pos.x < -GOAL_THRESHOLD)
 			{
 				scoreAway++;
 				SoccerBall::resetBallAndPublishScore();
 			}
-			else if (model->GetWorldPose().pos.x > FIELD_WIDTH/2)
+			else if (model->GetWorldPose().pos.x > GOAL_THRESHOLD)
 			{
 				scoreHome++;
 				SoccerBall::resetBallAndPublishScore();
@@ -96,7 +103,7 @@ namespace gazebo
 		ros::NodeHandle node_handle;
 		ros::Subscriber command_sub;
 		ros::Publisher score_pub;
-		geometry_msgs::Vector3 command_msg;\
+		geometry_msgs::Vector3 command_msg;
 		bool newMessage;
 		int scoreHome;
 		int scoreAway;

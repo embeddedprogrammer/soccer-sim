@@ -1,44 +1,75 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- declare arg to be passed in -->
+  <arg name="gazebo_gui" default="true" />
+  <arg name="vision_home1" default="/vision/home1" />
+  <arg name="vision_home2" default="/vision/home2" />
+  <arg name="vision_away1" default="/vision/away1" />
+  <arg name="vision_away2" default="/vision/away2" />
+  <arg name="vision_ball" default="/vision/ball" />
+  <arg name="vel_cmd_home1" default="/home1/command" />
+  <arg name="vel_cmd_home2" default="/home2/command" />
+  <arg name="vel_cmd_away1" default="/away1/command" />
+  <arg name="vel_cmd_away2" default="/away2/command" />
+  <arg name="kick_home1" default="/home1/kick" />
+  <arg name="kick_home2" default="/home2/kick" />
+  <arg name="kick_away1" default="/away1/kick" />
+  <arg name="kick_away2" default="/away2/kick" />
+
+  <!-- Connect to soccer_drive plugin for velocity commands -->
+  <remap from="/home1/command" to="$(arg vel_cmd_home1)" />
+  <remap from="/home2/command" to="$(arg vel_cmd_home2)" />
+  <remap from="/away1/command" to="$(arg vel_cmd_away1)" />
+  <remap from="/away2/command" to="$(arg vel_cmd_away2)" />
+
+  <!-- Connect to soccer_drive plugin for kick commands -->
+  <remap from="/home1/kick" to="$(arg kick_home1)" />
+  <remap from="/home2/kick" to="$(arg kick_home2)" />
+  <remap from="/away1/kick" to="$(arg kick_away1)" />
+  <remap from="/away2/kick" to="$(arg kick_away2)" />
+
   <!-- Soccer field world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find walle)/worlds/soccer_field.world"/>
+    <arg name="world_name" value="$(find soccersim)/worlds/soccer_field.world"/>
+    <arg name="gui" value="$(arg gazebo_gui)"/>
   </include>
 
   <!-- Soccer robots -->
-  <include file="$(find walle)/launch/robot.launch">
+  <include file="$(find soccersim)/launch/robot.launch">
     <arg name="robot_name" value="home1"/>
     <arg name="jersey_color" value="Blue"/>
     <arg name="x" value="-0.5"/>
   </include>
-  <include file="$(find walle)/launch/robot.launch">
+  <include file="$(find soccersim)/launch/robot.launch">
     <arg name="robot_name" value="home2"/>
     <arg name="jersey_color" value="Green"/>
     <arg name="x" value="-1.0"/>
   </include>
-  <include file="$(find walle)/launch/robot.launch">
+  <include file="$(find soccersim)/launch/robot.launch">
     <arg name="robot_name" value="away1"/>
     <arg name="jersey_color" value="Red"/>
     <arg name="x" value="0.5"/>
   </include>
-  <include file="$(find walle)/launch/robot.launch">
+  <include file="$(find soccersim)/launch/robot.launch">
     <arg name="robot_name" value="away2"/>
     <arg name="jersey_color" value="Purple"/>
     <arg name="x" value="1.0"/>
   </include>
 
   <!-- Vision -->
-  <node name="vision" pkg="walle" type="vision"/>
+  <node name="vision_sim" pkg="soccersim" type="vision_sim" output="screen">
+    <remap from="/vision/home1" to="$(arg vision_home1)"/>
+    <remap from="/vision/home2" to="$(arg vision_home2)"/>
+    <remap from="/vision/away1" to="$(arg vision_away1)"/>
+    <remap from="/vision/away2" to="$(arg vision_away2)"/>
+    <remap from="/vision/ball"  to="$(arg vision_ball)"/>
+  </node>
 
-  <!-- Home and away team controllers -->
-  <node name="home" pkg="walle" type="controller" args="_team:=home"/>
-  <node name="away" pkg="walle" type="controller" args="_team:=away"/>
+<!--   Home and away team controllers
+  <node name="home" pkg="soccersim" type="controller" args="_team:=home"/>
+  <node name="away" pkg="soccersim" type="controller" args="_team:=away"/> -->
 
   <!-- Soccer ball -->
-  <include file="$(find walle)/launch/ball.launch">
+  <include file="$(find soccersim)/launch/ball.launch">
   </include>
 </launch>
-
-
-
-

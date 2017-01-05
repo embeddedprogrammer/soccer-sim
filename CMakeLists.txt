@@ -1,8 +1,21 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(walle)
+project(soccersim)
 
 # Find catkin and any catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp gazebo_ros rospy std_msgs geometry_msgs message_generation cv_bridge genmsg image_transport sensor_msgs xacro)
+find_package(catkin REQUIRED COMPONENTS 
+    roscpp
+    rospy
+    gazebo_ros
+    std_msgs
+    std_srvs
+    geometry_msgs
+    message_generation
+    cv_bridge
+    genmsg
+    image_transport
+    sensor_msgs
+    xacro
+)
 
 # Depend on system install of Gazebo
 find_package(gazebo REQUIRED)
@@ -10,26 +23,23 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 link_directories(${GAZEBO_LIBRARY_DIRS})
 
 # Declare ROS messages and services
-add_message_files(DIRECTORY msg FILES SoccerPoses.msg)
+#add_message_files(DIRECTORY msg FILES)
 
 # Generate added messages and services
-generate_messages(DEPENDENCIES std_msgs geometry_msgs)
+generate_messages(DEPENDENCIES std_msgs std_srvs geometry_msgs)
 
 # Declare a catkin package
-catkin_package(CATKIN_DEPENDS message_runtime roscpp gazebo_ros)
+catkin_package(CATKIN_DEPENDS roscpp rospy std_msgs std_srvs geometry_msgs message_runtime gazebo_ros)
 
 # Specify additional locations of header files
 include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS})
 
 # Declare C++ executables
-add_executable(vision src/vision.cpp)
-add_dependencies(vision walle_generate_messages_cpp)
+add_executable(vision_sim src/vision.cpp)
+add_dependencies(vision_sim ${PROJECT_NAME}_generate_messages_cpp)
 find_package( OpenCV REQUIRED )
-target_link_libraries(vision ${OpenCV_LIBS} ${catkin_LIBRARIES})
+target_link_libraries(vision_sim ${OpenCV_LIBS} ${catkin_LIBRARIES})
 
-add_executable(controller src/controller.cpp)
-add_dependencies(controller walle_generate_messages_cpp)
-target_link_libraries(controller ${catkin_LIBRARIES})
 
 # Add plugins
 add_library(soccer_drive plugins/soccer_drive.cpp)

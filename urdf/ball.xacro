@@ -36,7 +36,7 @@
   <gazebo>
     <plugin name="soccer_ball" filename="libsoccer_ball.so">
       <namespace>ball</namespace>
-      <friction>0.01</friction>
+      <friction>0.05</friction>
     </plugin>
   </gazebo>  
 </robot>

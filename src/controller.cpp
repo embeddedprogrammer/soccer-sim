@@ -2,7 +2,7 @@
 #include "geometry_msgs/Pose2D.h"
 #include "geometry_msgs/Vector3.h"
 #include "std_msgs/Float64.h"
-#include "walle/SoccerPoses.h"
+#include "soccersim/SoccerPoses.h"
 #include "stdio.h"
 #include <eigen3/Eigen/Eigen>
 
@@ -14,8 +14,8 @@ using namespace Eigen;
 #define ROBOT_MAX_OMEGA 2*M_PI
 #define CONTROL_K_XY 5
 #define CONTROL_K_OMEGA 2
-#define FIELD_WIDTH 3.048  // in meters
-#define FIELD_HEIGHT 1.524 
+#define FIELD_WIDTH 3.40  // in meters
+#define FIELD_HEIGHT 2.38 
 #define ROBOT_RADIUS 0.10
 
 string team;
@@ -175,7 +175,7 @@ void play_rushGoal(RobotPose robot, Vector2d ball, int robotId)
 		skill_goToPoint(robot, position, robotId);
 }
 
-void visionCallback(const walle::SoccerPoses& msg)
+void visionCallback(const soccersim::SoccerPoses& msg)
 {
 	RobotPose player1;
 	RobotPose player2;
