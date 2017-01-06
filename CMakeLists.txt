@@ -22,11 +22,11 @@ find_package(gazebo REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 link_directories(${GAZEBO_LIBRARY_DIRS})
 
-# Declare ROS messages and services
+# Declare ROS messages
 #add_message_files(DIRECTORY msg FILES)
 
-# Generate added messages and services
-generate_messages(DEPENDENCIES std_msgs std_srvs geometry_msgs)
+# Generate added messages
+#generate_messages(DEPENDENCIES std_msgs std_srvs geometry_msgs)
 
 # Declare a catkin package
 catkin_package(CATKIN_DEPENDS roscpp rospy std_msgs std_srvs geometry_msgs message_runtime gazebo_ros)
@@ -36,10 +36,9 @@ include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${GAZEBO
 
 # Declare C++ executables
 add_executable(vision_sim src/vision.cpp)
-add_dependencies(vision_sim ${PROJECT_NAME}_generate_messages_cpp)
+#add_dependencies(vision_sim ${PROJECT_NAME}_generate_messages_cpp)
 find_package( OpenCV REQUIRED )
 target_link_libraries(vision_sim ${OpenCV_LIBS} ${catkin_LIBRARIES})
-
 
 # Add plugins
 add_library(soccer_drive plugins/soccer_drive.cpp)
