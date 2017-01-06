@@ -110,6 +110,19 @@ namespace gazebo
 		{
 			command_msg = msg;
 
+			// Since the actual robot hardware receives velocity commands in
+			// a robocentric coordinate frame (i.e., positive vel always goes
+			// forward, regardless of orientation), that means the velocity
+			// commands that are coming from the robot's controller are in a
+			// robocentric frame. Gazebo, however, expects global coordinates
+			// so if the team is away, we need to flip the vel_cmds to be in
+			// Gazebo's global coordinate frame.
+			if (!isHome())
+			{
+				command_msg.linear.x = -1.0*msg.linear.x;
+				command_msg.linear.y = -1.0*msg.linear.y;
+			}
+
 			// convert from degrees to radians
 			command_msg.angular.z = command_msg.angular.z*M_PI/180.0;
 		}
@@ -120,6 +133,12 @@ namespace gazebo
 			res.success = kick;
 
 			return true;
+		}
+
+		bool isHome()
+		{
+			// does robot_name have the string 'home' in it?
+			return robot_name.find("home") != string::npos;
 		}
 
 	private:

@@ -6,7 +6,6 @@
 
     <!-- Spawn home team -->
     <include file="$(eval find(team_home) + '/launch/' + team_home + '.launch')">
-    <!-- <include file="$(find $(arg team_home))/launch/$(arg team_home).launch"> -->
         <arg name="team_side" value="home" />
        
         <!-- remaps -->
