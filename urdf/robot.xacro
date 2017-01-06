@@ -38,7 +38,7 @@
       </geometry>
     </visual>
     <inertial>
-      <origin xyz="0 0 ${height/2+wheel_radius/4}" rpy="0 0 0"/>
+      <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0"/>
       <mass value="${mass}"/>
       <inertia
         ixx="${mass/12 * (3*radius*radius + height*height)}" ixy="0.0" ixz="0.0"

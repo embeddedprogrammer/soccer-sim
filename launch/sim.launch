@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- declare arg to be passed in -->
+    <arg name="team_home" default="demoteam" />
+    <arg name="team_away" default="0" />
+
+    <!-- Spawn home team -->
+    <include file="$(eval find(team_home) + '/launch/' + team_home + '.launch')">
+    <!-- <include file="$(find $(arg team_home))/launch/$(arg team_home).launch"> -->
+        <arg name="team_side" value="home" />
+       
+        <!-- remaps -->
+        <arg name="vel_cmd_ally1" value="/home1/command" />
+        <arg name="vel_cmd_ally2" value="/home2/command" />
+
+        <arg name="kick_ally1" value="kick_home1" />
+        <arg name="kick_ally2" value="kick_home2" />
+
+    </include>
+
+    <!-- Spawn away team -->
+    <group if="$(eval team_away != 0)">
+        <include file="$(eval find(team_away) + '/launch/' + team_away + '.launch')">
+            <arg name="team_side" value="away" />
+
+            <!-- remaps -->
+            <arg name="vel_cmd_ally1" value="/away1/command" />
+            <arg name="vel_cmd_ally2" value="/away2/command" />
+
+            <arg name="kick_ally1" value="kick_away1" />
+            <arg name="kick_ally2" value="kick_away2" />
+
+        </include>
+    </group>
+
+
+    <!-- Start soccer Gazebo simulator -->
+    <include file="$(find soccersim)/launch/soccer.launch">
+        <!-- You can save some CPU (~30%) by turning off the Gazebo GUI -->
+        <arg name="gazebo_gui" value="false" />
+
+        <!-- Outputs to simulated hardware/world -->
+        <arg name="kick_home1" value="/$(arg team_home)_home/ally1/kick" />
+        <arg name="kick_home2" value="/$(arg team_home)_home/ally2/kick" />
+        <group if="$(eval team_away != 0)">
+            <arg name="kick_away1" value="/$(arg team_away)_away/ally1/kick" />
+            <arg name="kick_away2" value="/$(arg team_away)_away/ally2/kick" />
+        </group>
+    </include>
+</launch>
