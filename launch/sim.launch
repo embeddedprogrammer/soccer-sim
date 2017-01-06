@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <launch>
     <!-- declare arg to be passed in -->
-    <arg name="team_home" default="demoteam" />
-    <arg name="team_away" default="0" />
+    <arg name="home_team" default="demoteam" />
+    <arg name="away_team" default="0" />
 
     <!-- Spawn home team -->
-    <include file="$(eval find(team_home) + '/launch/' + team_home + '.launch')">
+    <include file="$(eval find(home_team) + '/launch/' + home_team + '.launch')">
         <arg name="team_side" value="home" />
        
         <!-- remaps -->
@@ -18,8 +18,8 @@
     </include>
 
     <!-- Spawn away team -->
-    <group if="$(eval team_away != 0)">
-        <include file="$(eval find(team_away) + '/launch/' + team_away + '.launch')">
+    <group if="$(eval away_team != 0)">
+        <include file="$(eval find(away_team) + '/launch/' + away_team + '.launch')">
             <arg name="team_side" value="away" />
 
             <!-- remaps -->
@@ -39,11 +39,9 @@
         <arg name="gazebo_gui" value="false" />
 
         <!-- Outputs to simulated hardware/world -->
-        <arg name="kick_home1" value="/$(arg team_home)_home/ally1/kick" />
-        <arg name="kick_home2" value="/$(arg team_home)_home/ally2/kick" />
-        <group if="$(eval team_away != 0)">
-            <arg name="kick_away1" value="/$(arg team_away)_away/ally1/kick" />
-            <arg name="kick_away2" value="/$(arg team_away)_away/ally2/kick" />
-        </group>
+        <arg name="kick_home1" value="/$(arg home_team)_home/ally1/kick" />
+        <arg name="kick_home2" value="/$(arg home_team)_home/ally2/kick" />
+        <arg name="kick_away1" value="/$(arg away_team)_away/ally1/kick" if="$(eval away_team != 0)" />
+        <arg name="kick_away2" value="/$(arg away_team)_away/ally2/kick" if="$(eval away_team != 0)" />
     </include>
 </launch>
