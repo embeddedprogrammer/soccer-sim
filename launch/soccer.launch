@@ -49,11 +49,13 @@
     <arg name="robot_name" value="away1"/>
     <arg name="jersey_color" value="Red"/>
     <arg name="x" value="0.5"/>
+    <arg name="yaw" value="3.14159"/> <!-- Face the center -->
   </include>
   <include file="$(find soccersim)/launch/robot.launch">
     <arg name="robot_name" value="away2"/>
     <arg name="jersey_color" value="Purple"/>
     <arg name="x" value="1.0"/>
+    <arg name="yaw" value="3.14159"/> <!-- Face the center -->
   </include>
 
   <!-- Vision -->
