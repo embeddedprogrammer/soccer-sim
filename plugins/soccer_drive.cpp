@@ -6,6 +6,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
 #include "std_srvs/Trigger.h"
+#include "soccer_ref/GameState.h"
 
 using namespace std;
 
@@ -37,6 +38,8 @@ namespace gazebo
 			node_handle = ros::NodeHandle(robot_name);
 			gzmsg << "[soccer_drive] Subscribing to " << ("/" + robot_name + "/command") << "\n";
 			command_sub = node_handle.subscribe("/" + robot_name + "/command", 1, &SoccerDrive::CommandCallback, this);
+			game_state_sub = node_handle.subscribe("/game_state", 1, &SoccerDrive::GameStateCallback, this);
+			game_state_msg = soccer_ref::GameState();
 			kick_srv = node_handle.advertiseService("/" + robot_name + "/kick", &SoccerDrive::KickSrv, this);
 
 			// Init kick counter
@@ -117,7 +120,7 @@ namespace gazebo
 			// robocentric frame. Gazebo, however, expects global coordinates
 			// so if the team is away, we need to flip the vel_cmds to be in
 			// Gazebo's global coordinate frame.
-			if (!isHome())
+			if (!isHome() ^ game_state_msg.swapsides)
 			{
 		        command_msg.linear.x *= -1.0;
 		        command_msg.linear.y *= -1.0;				
@@ -126,6 +129,11 @@ namespace gazebo
 			// convert from degrees to radians
 			command_msg.angular.z *= M_PI/180.0;
 		}
+
+		void GameStateCallback(const soccer_ref::GameState msg)
+		{
+			game_state_msg = msg;
+		}		
 
 		bool KickSrv(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
 		{
@@ -152,7 +160,9 @@ namespace gazebo
 		ros::NodeHandle node_handle;
 		ros::Subscriber command_sub;
 		ros::Subscriber kick_sub;
+		ros::Subscriber game_state_sub;
 		geometry_msgs::Twist command_msg;
+		soccer_ref::GameState game_state_msg;
 		bool kick;
 		unsigned int kick_count;
 		ros::ServiceServer kick_srv;

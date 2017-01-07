@@ -43,6 +43,7 @@ target_link_libraries(vision_sim ${OpenCV_LIBS} ${catkin_LIBRARIES})
 
 # Add plugins
 add_library(soccer_drive plugins/soccer_drive.cpp)
+add_dependencies(soccer_drive soccer_ref_generate_messages_cpp)
 target_link_libraries(soccer_drive ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_library(soccer_ball plugins/soccer_ball.cpp)
