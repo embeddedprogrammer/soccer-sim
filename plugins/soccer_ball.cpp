@@ -42,9 +42,10 @@ namespace gazebo
 			command_sub = node_handle.subscribe("/" + ball_name + "/command", 1, &SoccerBall::CommandCallback, this);
 
 			// Subcribe to game state
-			//gzmsg << "[Soccer ball plugin] Subscribing to " << ("/" + ball_name + "/command") << "\n";
-			//node_handle = ros::NodeHandle(ball_name);
-			//game_sub = node_handle.subscribe("/game_state", 1, &SoccerBall::GameStateCallback, this);
+			gzmsg << "[Soccer ball plugin] Subscribing to /game_state\n";
+			game_state_sub = node_handle.subscribe("/game_state", 1, &SoccerBall::GameStateCallback, this);
+			game_state_msg = soccer_ref::GameState();
+			game_state_msg.reset_field = false;
 
 			// Listen to the update event. This event is broadcast every simulation iteration.
 			updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&SoccerBall::OnUpdate, this, _1));
@@ -63,7 +64,9 @@ namespace gazebo
 			math::Vector3 force = -linearVel*friction;
 			link->AddForce(force);
 
-			if(newMessage)
+			if(game_state_msg.reset_field)
+				resetBall();
+			else if(newMessage)
 			{
 				model->SetWorldPose(math::Pose(command_msg.x, command_msg.y, command_msg.z, 0, 0, 0));
 				newMessage = false;
@@ -85,6 +88,11 @@ namespace gazebo
 			newMessage = true;
 		}
 
+		void GameStateCallback(const soccer_ref::GameState msg)
+		{
+			game_state_msg = msg;
+		}
+
 	private:
 		// Pointer to the model
 		sdf::ElementPtr sdf_pointer;
@@ -95,7 +103,9 @@ namespace gazebo
 		event::ConnectionPtr updateConnection;
 		ros::NodeHandle node_handle;
 		ros::Subscriber command_sub;
+		ros::Subscriber game_state_sub;
 		geometry_msgs::Vector3 command_msg;
+		soccer_ref::GameState game_state_msg;
 		bool newMessage;
 	};
 
