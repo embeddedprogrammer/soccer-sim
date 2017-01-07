@@ -28,14 +28,14 @@ namespace gazebo
 			if (sdf_pointer->HasElement("namespace"))
 				robot_name = sdf_pointer->GetElement("namespace")->Get<std::string>();
 			else
-				gzerr << "[model_push] Please specify a namespace.\n";
+				gzerr << "[soccer_drive] Please specify a namespace.\n";
 			kP_xy = getValueFromSdf("kP_xy");
 			kP_w = getValueFromSdf("kP_w");
 			maxF_xy = getValueFromSdf("maxF_xy");
 			maxF_w = getValueFromSdf("maxF_w");
 
 			node_handle = ros::NodeHandle(robot_name);
-			gzmsg << "[model_push] Subscribing to " << ("/" + robot_name + "/command") << "\n";
+			gzmsg << "[soccer_drive] Subscribing to " << ("/" + robot_name + "/command") << "\n";
 			command_sub = node_handle.subscribe("/" + robot_name + "/command", 1, &SoccerDrive::CommandCallback, this);
 			kick_srv = node_handle.advertiseService("/" + robot_name + "/kick", &SoccerDrive::KickSrv, this);
 
@@ -53,7 +53,7 @@ namespace gazebo
 				return sdf_pointer->GetElement(name)->Get<double>();
 			else
 			{
-				gzerr << "[model_push] Please specify " << name << ".\n";
+				gzerr << "[soccer_drive] Please specify " << name << ".\n";
 				return 0;
 			}
 		}
@@ -76,7 +76,7 @@ namespace gazebo
 		{
 			if(link->GetWorldPose().pos.z < .02) //If robot is more than 2 cm off the ground, wheels no longer have any traction
 			{
-				// Apply forces to the model (using P control) to acheive the commanded linear and angular velocities.
+				// Apply forces to the model (using P control) to achieve the commanded linear and angular velocities.
 				math::Vector3 linearVel = link->GetWorldLinearVel();
 				math::Vector3 angularVel = link->GetWorldAngularVel();
 
@@ -119,12 +119,12 @@ namespace gazebo
 			// Gazebo's global coordinate frame.
 			if (!isHome())
 			{
-				command_msg.linear.x = -1.0*msg.linear.x;
-				command_msg.linear.y = -1.0*msg.linear.y;
+		        command_msg.linear.x *= -1.0;
+		        command_msg.linear.y *= -1.0;				
 			}
 
 			// convert from degrees to radians
-			command_msg.angular.z = command_msg.angular.z*M_PI/180.0;
+			command_msg.angular.z *= M_PI/180.0;
 		}
 
 		bool KickSrv(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
