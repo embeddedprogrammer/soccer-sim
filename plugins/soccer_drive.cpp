@@ -120,7 +120,8 @@ namespace gazebo
 			// robocentric frame. Gazebo, however, expects global coordinates
 			// so if the team is away, we need to flip the vel_cmds to be in
 			// Gazebo's global coordinate frame.
-			if (!isHome() ^ game_state_msg.swapsides)
+			// Also, do this if we have swapped sides for the second half.
+			if (!isHome() ^ game_state_msg.second_half)
 			{
 		        command_msg.linear.x *= -1.0;
 		        command_msg.linear.y *= -1.0;				
