@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "ros/ros.h"
 #include "geometry_msgs/Vector3.h"
+#include "soccer_ref/GameState.h"
 
 #define FIELD_WIDTH 		3.40  // in meters
 #define FIELD_HEIGHT 		2.38
@@ -35,9 +36,15 @@ namespace gazebo
 			else
 				gzerr << "[Soccer ball plugin] Please specify friction.\n";
 
+			// Subcribe to ball command topic
 			gzmsg << "[Soccer ball plugin] Subscribing to " << ("/" + ball_name + "/command") << "\n";
 			node_handle = ros::NodeHandle(ball_name);
 			command_sub = node_handle.subscribe("/" + ball_name + "/command", 1, &SoccerBall::CommandCallback, this);
+
+			// Subcribe to game state
+			//gzmsg << "[Soccer ball plugin] Subscribing to " << ("/" + ball_name + "/command") << "\n";
+			//node_handle = ros::NodeHandle(ball_name);
+			//game_sub = node_handle.subscribe("/game_state", 1, &SoccerBall::GameStateCallback, this);
 
 			// Listen to the update event. This event is broadcast every simulation iteration.
 			updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&SoccerBall::OnUpdate, this, _1));
