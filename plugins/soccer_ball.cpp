@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "ros/ros.h"
 #include "geometry_msgs/Vector3.h"
-#include "soccer_ref/GameState.h"
+#include "soccerref/GameState.h"
 
 #define FIELD_WIDTH 		3.40  // in meters
 #define FIELD_HEIGHT 		2.38
@@ -44,7 +44,7 @@ namespace gazebo
 			// Subcribe to game state
 			gzmsg << "[Soccer ball plugin] Subscribing to /game_state\n";
 			game_state_sub = node_handle.subscribe("/game_state", 1, &SoccerBall::GameStateCallback, this);
-			game_state_msg = soccer_ref::GameState();
+			game_state_msg = soccerref::GameState();
 			game_state_msg.reset_field = false;
 
 			// Listen to the update event. This event is broadcast every simulation iteration.
@@ -88,7 +88,7 @@ namespace gazebo
 			newMessage = true;
 		}
 
-		void GameStateCallback(const soccer_ref::GameState msg)
+		void GameStateCallback(const soccerref::GameState msg)
 		{
 			game_state_msg = msg;
 		}
@@ -105,7 +105,7 @@ namespace gazebo
 		ros::Subscriber command_sub;
 		ros::Subscriber game_state_sub;
 		geometry_msgs::Vector3 command_msg;
-		soccer_ref::GameState game_state_msg;
+		soccerref::GameState game_state_msg;
 		bool newMessage;
 	};
 

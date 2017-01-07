@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
     image_transport
     sensor_msgs
     xacro
-    soccer_ref
+    soccerref
 )
 
 # Depend on system install of Gazebo
@@ -30,7 +30,7 @@ link_directories(${GAZEBO_LIBRARY_DIRS})
 #generate_messages(DEPENDENCIES std_msgs std_srvs geometry_msgs)
 
 # Declare a catkin package
-catkin_package(CATKIN_DEPENDS roscpp rospy std_msgs std_srvs geometry_msgs message_runtime gazebo_ros soccer_ref)
+catkin_package(CATKIN_DEPENDS roscpp rospy std_msgs std_srvs geometry_msgs message_runtime gazebo_ros soccerref)
 
 # Specify additional locations of header files
 include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS})
@@ -43,11 +43,11 @@ target_link_libraries(vision_sim ${OpenCV_LIBS} ${catkin_LIBRARIES})
 
 # Add plugins
 add_library(soccer_drive plugins/soccer_drive.cpp)
-add_dependencies(soccer_drive soccer_ref_generate_messages_cpp)
+add_dependencies(soccer_drive soccerref_generate_messages_cpp)
 target_link_libraries(soccer_drive ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_library(soccer_ball plugins/soccer_ball.cpp)
-add_dependencies(soccer_ball soccer_ref_generate_messages_cpp)
+add_dependencies(soccer_ball soccerref_generate_messages_cpp)
 target_link_libraries(soccer_ball ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 # Generate .world files from .world.xacro files

@@ -6,7 +6,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
 #include "std_srvs/Trigger.h"
-#include "soccer_ref/GameState.h"
+#include "soccerref/GameState.h"
 
 using namespace std;
 
@@ -39,7 +39,7 @@ namespace gazebo
 			gzmsg << "[soccer_drive] Subscribing to " << ("/" + robot_name + "/command") << "\n";
 			command_sub = node_handle.subscribe("/" + robot_name + "/command", 1, &SoccerDrive::CommandCallback, this);
 			game_state_sub = node_handle.subscribe("/game_state", 1, &SoccerDrive::GameStateCallback, this);
-			game_state_msg = soccer_ref::GameState();
+			game_state_msg = soccerref::GameState();
 			kick_srv = node_handle.advertiseService("/" + robot_name + "/kick", &SoccerDrive::KickSrv, this);
 
 			// Init kick counter
@@ -130,7 +130,7 @@ namespace gazebo
 			command_msg.angular.z *= M_PI/180.0;
 		}
 
-		void GameStateCallback(const soccer_ref::GameState msg)
+		void GameStateCallback(const soccerref::GameState msg)
 		{
 			game_state_msg = msg;
 		}		
@@ -162,7 +162,7 @@ namespace gazebo
 		ros::Subscriber kick_sub;
 		ros::Subscriber game_state_sub;
 		geometry_msgs::Twist command_msg;
-		soccer_ref::GameState game_state_msg;
+		soccerref::GameState game_state_msg;
 		bool kick;
 		unsigned int kick_count;
 		ros::ServiceServer kick_srv;
