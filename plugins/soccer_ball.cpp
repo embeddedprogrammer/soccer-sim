@@ -6,6 +6,12 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Vector3.h"
 
+#define FIELD_WIDTH 		3.40  // in meters
+#define FIELD_HEIGHT 		2.38
+
+// the ball goes back to home after this threshold
+#define GOAL_THRESHOLD		(FIELD_WIDTH/2 + 0.05)
+
 namespace gazebo
 {
 	class SoccerBall : public ModelPlugin
@@ -38,6 +44,11 @@ namespace gazebo
 			newMessage = false;
 		}
 
+		void resetBall()
+		{
+			model->SetWorldPose(math::Pose(0, 0, 0.2, 0, 0, 0));
+		}
+
 		// Called by the world update start event
 		void OnUpdate(const common::UpdateInfo & /*_info*/)
 		{
@@ -54,6 +65,11 @@ namespace gazebo
 				link->SetLinearVel(math::Vector3(0, 0, 0));
 				link->SetForce(math::Vector3(0, 0, 0));
 			}
+			else if (model->GetWorldPose().pos.x < -GOAL_THRESHOLD)
+				SoccerBall::resetBall();
+			else if (model->GetWorldPose().pos.x > GOAL_THRESHOLD)
+				SoccerBall::resetBall();
+
 		}
 
 		void CommandCallback(const geometry_msgs::Vector3 msg)
