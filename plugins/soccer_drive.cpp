@@ -34,6 +34,8 @@ namespace gazebo
 			kP_w = getValueFromSdf("kP_w");
 			maxF_xy = getValueFromSdf("maxF_xy");
 			maxF_w = getValueFromSdf("maxF_w");
+			F_height = getValueFromSdf("F_height");
+			friction = getValueFromSdf("friction");
 
 			node_handle = ros::NodeHandle(robot_name);
 			gzmsg << "[soccer_drive] Subscribing to " << ("/" + robot_name + "/command") << "\n";
@@ -82,17 +84,26 @@ namespace gazebo
 				// Apply forces to the model (using P control) to achieve the commanded linear and angular velocities.
 				math::Vector3 linearVel = link->GetWorldLinearVel();
 				math::Vector3 angularVel = link->GetWorldAngularVel();
-
 				double fx = SoccerDrive::saturate((command_msg.linear.x - linearVel.x)*kP_xy, maxF_xy);
 				double fy = SoccerDrive::saturate((command_msg.linear.y - linearVel.y)*kP_xy, maxF_xy);
 				double fw = SoccerDrive::saturate((command_msg.angular.z - angularVel.z)*kP_w, maxF_w);
 
-				link->AddForce(math::Vector3(fx, fy, 0));
+				// Note: We are applying the force at height F_height. This seems a bit easier then creating a child link
+				// at a different location and then trying to figure out how to access the child link.
+				link->AddForceAtRelativePosition(math::Vector3(fx, fy, 0), math::Vector3(0, 0, F_height));
 				link->AddTorque(math::Vector3(0, 0, fw));
 			}
 
+			// Artificially add friction
+			math::Vector3 vel = link->GetWorldLinearVel();
+			math::Vector3 friction_force = -vel*friction;
+			link->AddForce(friction_force);
+
 			// Kick the ball!
-			if (kick) {
+			if (kick)
+			{
+				// Note: Setting and adding force are the same thing if only executed once per time step.
+				// If AddForce is called more than once in a time step, the two forces will be added together.
 				kicker_joint->SetForce(0, 15);
 
 				kick_count++;
@@ -104,7 +115,9 @@ namespace gazebo
 					kick = false;
 				}
 
-			} else {
+			}
+			else
+			{
 				kicker_joint->SetForce(0, -15);
 			}
 		}
@@ -169,8 +182,10 @@ namespace gazebo
 		ros::ServiceServer kick_srv;
 		double kP_xy;
 		double kP_w;
+		double friction;
 		double maxF_xy;
 		double maxF_w;
+		double F_height;
 	};
 
 	// Register this plugin with the simulator

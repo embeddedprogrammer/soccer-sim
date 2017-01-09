@@ -26,13 +26,13 @@
   <!-- Chassis -->
   <link name="chassis">
     <collision name="collision">
-      <origin xyz="0 0 ${height/2+wheel_radius/4}" rpy="0 0 0"/>
+      <origin xyz="0 0 ${height/2+wheel_radius/3}" rpy="0 0 0"/>
       <geometry>
         <mesh filename="package://soccersim/meshes/soccer_robot.dae"/>
       </geometry>
     </collision>
     <visual>
-      <origin xyz="0 0 ${height/2+wheel_radius/4}" rpy="0 0 0"/>
+      <origin xyz="0 0 ${height/2+wheel_radius/3}" rpy="0 0 0"/>
       <geometry>
         <mesh filename="package://soccersim/meshes/soccer_robot.dae"/>
       </geometry>
@@ -48,6 +48,8 @@
   </link>
   <gazebo reference="chassis">
     <material>Gazebo/DarkGrey</material>
+    <mu1>0.0</mu1>
+    <mu2>0.0</mu2>
   </gazebo>
   <joint type="fixed" name="base_joint">
     <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -60,13 +62,13 @@
     <collision name="collision">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="${kicker_thickness} ${kicker_width} ${kicker_height}" />
+        <box size="${kicker_thickness} ${kicker_width} ${kicker_height}"/>
       </geometry>
     </collision>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="${kicker_thickness} ${kicker_width} ${kicker_height}" />
+        <box size="${kicker_thickness} ${kicker_width} ${kicker_height}"/>
       </geometry>
     </visual>
     <inertial>
@@ -80,11 +82,13 @@
   </link>
   <gazebo reference="kicker">
     <material>Gazebo/White</material>
+    <mu1>0.0</mu1>
+    <mu2>0.0</mu2>
   </gazebo>
   <joint type="prismatic" name="kicker_joint">
     <origin xyz="${kicker_dist} 0 ${kicker_height/2+0.01}" rpy="0 0 0"/>
-    <axis xyz="1 0 0" />
-    <limit upper="${kicker_upper_limit}" lower="0" effort="17" velocity="1" />
+    <axis xyz="1 0 0"/>
+    <limit upper="${kicker_upper_limit}" lower="0" effort="17" velocity="1"/>
     <parent link="base_link"/>
     <child link="kicker"/>
   </joint>
@@ -127,6 +131,8 @@
       <kP_w>2</kP_w>
       <maxF_xy>10</maxF_xy>
       <maxF_w>1</maxF_w>
+      <F_height>${wheel_radius/2}</F_height>
+      <friction>5</friction>
     </plugin>
   </gazebo>
 </robot>
