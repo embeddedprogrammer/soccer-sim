@@ -7,6 +7,7 @@
 #include "geometry_msgs/Twist.h"
 #include "std_srvs/Trigger.h"
 #include "soccerref/GameState.h"
+#include <math.h>
 
 using namespace std;
 
@@ -68,6 +69,16 @@ namespace gazebo
 			return (0 < val) - (val < 0);
 		}
 
+		void saturate2(double& Fx, double& Fy, double Fmax)
+		{
+			double F = sqrt(Fx*Fx + Fy*Fy);
+			if(fabs(F) > Fmax)
+			{
+				Fx *= Fmax / F;
+				Fy *= Fmax / F;
+			}
+		}		
+
 		double saturate(double F, double Fmax)
 		{
 			if(fabs(F) > Fmax)
@@ -84,14 +95,16 @@ namespace gazebo
 				// Apply forces to the model (using P control) to achieve the commanded linear and angular velocities.
 				math::Vector3 linearVel = link->GetWorldLinearVel();
 				math::Vector3 angularVel = link->GetWorldAngularVel();
-				double fx = SoccerDrive::saturate((command_msg.linear.x - linearVel.x)*kP_xy, maxF_xy);
-				double fy = SoccerDrive::saturate((command_msg.linear.y - linearVel.y)*kP_xy, maxF_xy);
-				double fw = SoccerDrive::saturate((command_msg.angular.z - angularVel.z)*kP_w, maxF_w);
+				double Fx = (command_msg.linear.x - linearVel.x)*kP_xy;
+				double Fy = (command_msg.linear.y - linearVel.y)*kP_xy;
+				double Fw = (command_msg.angular.z - angularVel.z)*kP_w;
+				saturate2(Fx, Fy, maxF_xy);
+				Fw = saturate(Fw, maxF_w);
 
 				// Note: We are applying the force at height F_height. This seems a bit easier then creating a child link
 				// at a different location and then trying to figure out how to access the child link.
-				link->AddForceAtRelativePosition(math::Vector3(fx, fy, 0), math::Vector3(0, 0, F_height));
-				link->AddTorque(math::Vector3(0, 0, fw));
+				link->AddForceAtRelativePosition(math::Vector3(Fx, Fy, 0), math::Vector3(0, 0, F_height));
+				link->AddTorque(math::Vector3(0, 0, Fw));
 			}
 
 			// Artificially add friction
