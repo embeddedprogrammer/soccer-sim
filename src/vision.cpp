@@ -42,6 +42,14 @@ ros::Publisher away2_pub;
 ros::Publisher ball_pub;
 ros::Publisher ball_position_pub; // for publishing internally from the vision window
 
+// Use variables to store position of objects. These variables are very
+// useful when the ball cannot be seen, otherwise we'll get the position (0, 0)
+geometry_msgs::Pose2D poseHome1;
+geometry_msgs::Pose2D poseHome2;
+geometry_msgs::Pose2D poseAway1;
+geometry_msgs::Pose2D poseAway2;
+geometry_msgs::Pose2D poseBall;
+
 void thresholdImage(Mat& imgHSV, Mat& imgGray, Scalar color[])
 {
     inRange(imgHSV, color[0], color[1], imgGray);
@@ -141,12 +149,6 @@ void processImage(Mat frame)
 {
     Mat imgHsv;
     cvtColor(frame, imgHsv, COLOR_BGR2HSV);
-
-    geometry_msgs::Pose2D poseHome1;
-    geometry_msgs::Pose2D poseHome2;
-    geometry_msgs::Pose2D poseAway1;
-    geometry_msgs::Pose2D poseAway2;
-    geometry_msgs::Pose2D poseBall;
 
     getRobotPose(imgHsv, blue,   poseHome1);
     getRobotPose(imgHsv, green,  poseHome2);
