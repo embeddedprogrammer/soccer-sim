@@ -7,8 +7,8 @@
 #include "geometry_msgs/Vector3.h"
 #include "soccerref/GameState.h"
 
-#define FIELD_WIDTH 		3.40  // in meters
-#define FIELD_HEIGHT 		2.38
+#define FIELD_WIDTH 		3.53  // in meters
+#define FIELD_HEIGHT 		2.39
 
 // the ball goes back to home after this threshold
 #define GOAL_THRESHOLD		(FIELD_WIDTH/2 + 0.05)

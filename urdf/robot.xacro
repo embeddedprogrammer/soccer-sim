@@ -131,7 +131,7 @@
       <kP_w>2</kP_w>
       <maxF_xy>10</maxF_xy>
       <maxF_w>1</maxF_w>
-      <F_height>${wheel_radius/2}</F_height>
+      <F_height>${wheel_radius}</F_height>
       <friction>5</friction>
     </plugin>
   </gazebo>
