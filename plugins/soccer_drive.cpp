@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define KICK_COUNT_MAX	125
+#define KICK_TIME_MS 125
 
 namespace gazebo
 {
@@ -37,6 +37,7 @@ namespace gazebo
 			maxF_w = getValueFromSdf("maxF_w");
 			F_height = getValueFromSdf("F_height");
 			friction = getValueFromSdf("friction");
+			simulator_step_size = model->GetWorld()->GetPhysicsEngine()->GetMaxStepSize();
 
 			node_handle = ros::NodeHandle(robot_name);
 			gzmsg << "[soccer_drive] Subscribing to " << ("/" + robot_name + "/command") << "\n";
@@ -122,7 +123,7 @@ namespace gazebo
 				kick_count++;
 
 				// Find out when to release kicker
-				if (kick_count == KICK_COUNT_MAX)
+				if (kick_count >= KICK_TIME_MS / (1000.0 * simulator_step_size))
 				{
 					kick_count = 0;
 					kick = false;
@@ -199,6 +200,7 @@ namespace gazebo
 		double maxF_xy;
 		double maxF_w;
 		double F_height;
+		double simulator_step_size;
 	};
 
 	// Register this plugin with the simulator
