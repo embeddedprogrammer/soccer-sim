@@ -14,16 +14,16 @@
 using namespace std;
 using namespace cv;
 
-#define FIELD_WIDTH     3.40  // in meters
-#define FIELD_HEIGHT    2.38 
+#define FIELD_WIDTH     3.53  // in meters
+#define FIELD_HEIGHT    2.39 
 #define ROBOT_RADIUS    0.10
 #define GUI_NAME        "Soccer Overhead Camera"
 
 // Mouse click parameters, empirically found
 // The smaller the number, the more positive the error
 // (i.e., it will be above the mouse in +y region)
-#define FIELD_WIDTH_PIXELS      540.0 // measured from threshold of goal to goal
-#define FIELD_HEIGHT_PIXELS     378.0 // measured from inside of wall to wall
+#define FIELD_WIDTH_PIXELS      577.0 // measured from threshold of goal to goal
+#define FIELD_HEIGHT_PIXELS     388.0 // measured from inside of wall to wall
 #define CAMERA_WIDTH            640.0
 #define CAMERA_HEIGHT           480.0
 
@@ -75,7 +75,7 @@ bool compareMomentAreas(Moments moment1, Moments moment2)
     return area1 < area2;
 }
 
-Point2d imageToWorldCoordinates(Point2d point_i, Size imageSize)
+Point2d imageToWorldCoordinates(Point2d point_i)
 {
     Point2d centerOfField(CAMERA_WIDTH/2, CAMERA_HEIGHT/2);
     Point2d center_w = (point_i - centerOfField);
@@ -111,8 +111,8 @@ void getRobotPose(Mat& imgHsv, Scalar color[], geometry_msgs::Pose2D& robotPose)
     Moments mmLarge = mm[mm.size() - 1];
     Moments mmSmall = mm[mm.size() - 2];
 
-    Point2d centerLarge = imageToWorldCoordinates(getCenterOfMass(mmLarge), imgHsv.size());
-    Point2d centerSmall = imageToWorldCoordinates(getCenterOfMass(mmSmall), imgHsv.size());
+    Point2d centerLarge = imageToWorldCoordinates(getCenterOfMass(mmLarge));
+    Point2d centerSmall = imageToWorldCoordinates(getCenterOfMass(mmSmall));
 
     Point2d robotCenter = (centerLarge + centerSmall) * (1.0 / 2);
     Point2d diff = centerSmall - centerLarge;
@@ -138,7 +138,7 @@ void getBallPose(Mat& imgHsv, Scalar color[], geometry_msgs::Pose2D& ballPose)
         return;
 
     Moments mm = moments((Mat)contours[0]);
-    Point2d ballCenter = imageToWorldCoordinates(getCenterOfMass(mm), imgHsv.size());
+    Point2d ballCenter = imageToWorldCoordinates(getCenterOfMass(mm));
 
     ballPose.x = ballCenter.x;
     ballPose.y = ballCenter.y;
@@ -169,7 +169,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     {
         Mat frame = cv_bridge::toCvShare(msg, "bgr8")->image;
         processImage(frame);
-        imshow(GUI_NAME, frame);        
+        imshow(GUI_NAME, frame);
         waitKey(30);
     }
     catch (cv_bridge::Exception& e)
@@ -209,6 +209,10 @@ void mouseCallback(int event, int x, int y, int flags, void* userdata) {
 
     if (event == EVENT_LBUTTONDOWN) {
         mouse_left_down = true;
+        Point2d point_meters = imageToWorldCoordinates(Point2d(x, y));
+        char buffer[50];
+        sprintf(buffer, "Location: (%.3f m, %.3f m)", point_meters.x, point_meters.y);
+        displayStatusBar(GUI_NAME, buffer, 10000);
 
     } else if (event == EVENT_MOUSEMOVE) {
         if (mouse_left_down) sendBallMessage(x, y);

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "ros/ros.h"
 #include "geometry_msgs/Vector3.h"
+#include "geometry_msgs/Pose2D.h"
 #include "soccerref/GameState.h"
 
 #define FIELD_WIDTH 		3.53  // in meters
@@ -40,6 +41,10 @@ namespace gazebo
 			gzmsg << "[Soccer ball plugin] Subscribing to " << ("/" + ball_name + "/command") << "\n";
 			node_handle = ros::NodeHandle(ball_name);
 			command_sub = node_handle.subscribe("/" + ball_name + "/command", 1, &SoccerBall::CommandCallback, this);
+
+			// Publish ball location
+			gzmsg << "[Soccer ball plugin] Publishing to /ball/truth\n";
+			ball_pub = node_handle.advertise<geometry_msgs::Pose2D>("/ball/truth", 5);
 
 			// Subcribe to game state
 			gzmsg << "[Soccer ball plugin] Subscribing to /game_state\n";
@@ -80,6 +85,12 @@ namespace gazebo
 			else if (model->GetWorldPose().pos.x > GOAL_THRESHOLD)
 				SoccerBall::resetBall();
 
+			// Publish true ball location
+			geometry_msgs::Pose2D truth;
+			truth.x = model->GetWorldPose().pos.x;
+			truth.y = model->GetWorldPose().pos.y;
+			truth.theta = 0;
+			ball_pub.publish(truth);
 		}
 
 		void CommandCallback(const geometry_msgs::Vector3 msg)
@@ -104,6 +115,7 @@ namespace gazebo
 		ros::NodeHandle node_handle;
 		ros::Subscriber command_sub;
 		ros::Subscriber game_state_sub;
+		ros::Publisher ball_pub;
 		geometry_msgs::Vector3 command_msg;
 		soccerref::GameState game_state_msg;
 		bool newMessage;
